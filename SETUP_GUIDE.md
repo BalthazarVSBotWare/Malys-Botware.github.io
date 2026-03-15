@@ -202,7 +202,7 @@ Skip if already done. Otherwise:
 
 ## Step 6: Seed Your Existing Data
 
-Replace `YOUR_USER_ID_HERE` with your UUID from Step 4 (7 total replacements).
+Replace `YOUR_USER_ID_HERE` with your UUID from Step 4.
 
 ```sql
 -- SITE SETTINGS
@@ -293,4 +293,4 @@ You already have tables from a previous setup. Run the DROP commands at the top 
 Check browser console (F12) for errors. Most common issue is the user_id not matching — double-check your UUID.
 
 **Can't edit after logging in:**
-Make sure the user_id in your seed data matches your actual Supabase user UUID exactly (no extra characters, no doubling).
+Make sure the user_id in your seed data matches your actual Supabase user UUID exactly.
