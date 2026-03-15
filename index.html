@@ -5,610 +5,607 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Malys's Little Home On The Web</title>
   <meta name="description" content="A personal corner of the internet. Learning, building, and figuring it out one rabbithole at a time.">
-
-  <!-- FONTS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
-
-  <!-- 
-    SUPABASE CLIENT — MIT licensed
-    https://github.com/supabase/supabase-js
-  -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
-  <!--
-    QUILL RICH TEXT EDITOR — BSD-3-Clause licensed
-    https://github.com/slab/quill
-  -->
   <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
-
   <style>
     :root {
-      --black:       #0a0a0a;
-      --black-light: #111111;
-      --black-card:  #141414;
-      --red:         #e50000;
-      --red-dim:     #991111;
-      --red-glow:    rgba(229, 0, 0, 0.15);
-      --white:       #e8e0d8;
-      --white-dim:   #887f77;
-      --gray:        #333333;
-      --gray-light:  #555555;
-      --green:       #22c55e;
-      --green-dim:   #166534;
-      --font-heading: 'Space Mono', monospace;
-      --font-body:    'IBM Plex Mono', monospace;
-      --space-xs:  4px;
-      --space-sm:  8px;
-      --space-md:  16px;
-      --space-lg:  32px;
-      --space-xl:  64px;
-      --space-2xl: 128px;
-      --max-width: 720px;
-      --ease: cubic-bezier(0.23, 1, 0.32, 1);
+      --black:#0a0a0a;--black-light:#111111;--black-card:#141414;--red:#e50000;--red-dim:#991111;
+      --red-glow:rgba(229,0,0,0.15);--white:#e8e0d8;--white-dim:#887f77;--gray:#333333;
+      --gray-light:#555555;--green:#22c55e;--green-dim:#166534;
+      --font-heading:'Space Mono',monospace;--font-body:'IBM Plex Mono',monospace;
+      --space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:32px;--space-xl:64px;--space-2xl:128px;
+      --max-width:720px;--ease:cubic-bezier(0.23,1,0.32,1);
     }
-
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; font-size: 16px; }
-    body {
-      background: var(--black); color: var(--white); font-family: var(--font-body);
-      font-weight: 300; line-height: 1.7; -webkit-font-smoothing: antialiased; overflow-x: hidden;
-    }
-    body::before {
-      content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-      pointer-events: none; z-index: 9999;
-    }
-    ::selection { background: var(--red); color: var(--black); }
-    a { color: var(--red); text-decoration: none; transition: opacity 0.2s var(--ease); }
-    a:hover { opacity: 0.7; }
-    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 var(--space-lg); }
-    section { padding: var(--space-2xl) 0; }
-
-    /* NAV */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--gray); padding: var(--space-md) 0;
-    }
-    nav .container { display: flex; justify-content: space-between; align-items: center; }
-    .nav-logo-group { display: flex; align-items: center; gap: var(--space-sm); }
-    .nav-logo { font-family: var(--font-heading); font-weight: 700; font-size: 0.85rem; color: var(--red); letter-spacing: 2px; text-transform: uppercase; }
-    .admin-login-link { cursor: pointer; color: var(--gray); transition: color 0.2s var(--ease); display: inline-flex; align-items: center; line-height: 1; }
-    .admin-login-link:hover { color: var(--white-dim); }
-    .admin-logout-link { display: none; cursor: pointer; color: var(--red-dim); transition: color 0.2s var(--ease); align-items: center; line-height: 1; }
-    .admin-logout-link:hover { color: var(--red); }
-    .nav-links { display: flex; gap: var(--space-lg); list-style: none; }
-    .nav-links a { font-size: 0.75rem; color: var(--white-dim); letter-spacing: 1.5px; text-transform: uppercase; transition: color 0.2s var(--ease); }
-    .nav-links a:hover, .nav-links a.active { color: var(--red); opacity: 1; }
-    .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: var(--space-sm); }
-    .nav-toggle span { display: block; width: 20px; height: 2px; background: var(--white); margin: 4px 0; }
-
-    /* HERO */
-    .hero { min-height: 100vh; display: flex; align-items: center; position: relative; padding-top: var(--space-xl); }
-    .hero::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -60%); width: 400px; height: 400px; background: radial-gradient(circle, var(--red-glow) 0%, transparent 70%); pointer-events: none; }
-    .hero-content { display: grid; grid-template-columns: 200px 1fr; gap: var(--space-xl); align-items: center; position: relative; z-index: 1; }
-    .hero-text h1 { font-family: var(--font-heading); font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 700; line-height: 1.1; margin-bottom: var(--space-md); }
-    .hero-text h1 .red { color: var(--red); }
-    .hero-text .tagline { font-size: 0.95rem; color: var(--white-dim); margin-bottom: var(--space-lg); max-width: 480px; }
-    .hero-text .status { display: inline-flex; align-items: center; gap: var(--space-sm); font-size: 0.75rem; color: var(--red); letter-spacing: 1px; text-transform: uppercase; }
-    .hero-text .status::before { content: ''; width: 6px; height: 6px; background: var(--red); border-radius: 50%; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-    .character-wrap { position: relative; width: 200px; height: 300px; animation: float 6s ease-in-out infinite; }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-    .character-wrap svg { width: 100%; height: 100%; filter: drop-shadow(0 0 30px rgba(229, 0, 0, 0.2)); }
-
-    /* ABOUT */
-    .about { border-top: 1px solid var(--gray); }
-    .section-label { font-family: var(--font-heading); font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-bottom: var(--space-lg); }
-    .section-title { font-family: var(--font-heading); font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700; line-height: 1.3; margin-bottom: var(--space-lg); }
-    .about-text p { margin-bottom: var(--space-md); color: var(--white-dim); font-size: 0.9rem; }
-    .beliefs { margin-top: var(--space-xl); display: grid; gap: var(--space-lg); }
-    .belief { padding-left: var(--space-lg); border-left: 2px solid var(--red-dim); }
-    .belief h3 { font-family: var(--font-heading); font-size: 0.9rem; font-weight: 700; margin-bottom: var(--space-sm); color: var(--white); }
-    .belief p { font-size: 0.85rem; color: var(--white-dim); }
-
-    /* DASHBOARD + JOURNAL SHARED */
-    .dashboard, .journal { border-top: 1px solid var(--gray); }
-    .admin-toolbar {
-      display: none; margin-bottom: var(--space-lg); padding: var(--space-md) var(--space-lg);
-      background: var(--black-card); border: 1px solid var(--red-dim);
-      align-items: center; justify-content: space-between; gap: var(--space-md);
-    }
-    .admin-toolbar.visible { display: flex; }
-    .admin-toolbar .toolbar-status { font-size: 0.75rem; color: var(--red); font-family: var(--font-heading); letter-spacing: 1px; text-transform: uppercase; }
-
-    .now-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg); }
-    .now-card { background: var(--black-card); border: 1px solid var(--gray); padding: var(--space-lg); transition: border-color 0.3s var(--ease); }
-    .now-card:hover { border-color: var(--red-dim); }
-    .now-card h3 { font-family: var(--font-heading); font-size: 0.8rem; font-weight: 700; color: var(--red); letter-spacing: 1px; text-transform: uppercase; margin-bottom: var(--space-md); }
-    .now-card p, .now-card .rich-content { font-size: 0.85rem; color: var(--white-dim); }
-    .tile-controls, .entry-controls { display: none; margin-top: var(--space-md); padding-top: var(--space-sm); border-top: 1px solid var(--gray); gap: var(--space-sm); flex-wrap: wrap; align-items: center; }
-    .tile-controls.visible, .entry-controls.visible { display: flex; }
-    .entry-controls .control-spacer { flex: 1; }
-    .share-group { display: flex; gap: var(--space-xs); align-items: center; }
-    .share-label { font-size: 0.6rem; color: var(--white-dim); letter-spacing: 1px; text-transform: uppercase; margin-right: var(--space-xs); }
-    .now-updated { margin-top: var(--space-lg); font-size: 0.75rem; color: var(--gray-light); font-style: italic; }
-
-    /* PROJECTS */
-    .projects { border-top: 1px solid var(--gray); }
-    .project-card { background: var(--black-card); border: 1px solid var(--gray); padding: var(--space-lg); margin-bottom: var(--space-lg); transition: border-color 0.3s var(--ease); }
-    .project-card:hover { border-color: var(--red-dim); }
-    .project-card .project-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-md); }
-    .project-card h3 { font-family: var(--font-heading); font-size: 1rem; font-weight: 700; }
-    .project-card .project-tags { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
-    .project-card .tag { font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; color: var(--red); border: 1px solid var(--red-dim); padding: 2px 8px; }
-    .project-card p { font-size: 0.85rem; color: var(--white-dim); margin-bottom: var(--space-md); }
-    .project-card .project-link { font-size: 0.8rem; font-family: var(--font-heading); letter-spacing: 1px; }
-
-    /* JOURNAL ENTRIES */
-    .journal-entry { padding-bottom: var(--space-xl); margin-bottom: var(--space-xl); border-bottom: 1px solid var(--gray); }
-    .journal-entry:last-child { border-bottom: none; }
-    .journal-entry .entry-date { font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--red); margin-bottom: var(--space-sm); }
-    .journal-entry h3 { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; margin-bottom: var(--space-md); line-height: 1.4; }
-    .journal-entry p { font-size: 0.88rem; color: var(--white-dim); margin-bottom: var(--space-md); }
-
-    /* Rich content from Quill — style rendered HTML inside entries/tiles */
-    .rich-content { color: var(--white-dim); line-height: 1.7; }
-    .rich-content p { margin-bottom: var(--space-md); }
-    .rich-content h1, .rich-content h2, .rich-content h3 { font-family: var(--font-heading); color: var(--white); margin-bottom: var(--space-sm); margin-top: var(--space-md); }
-    .rich-content h1 { font-size: 1.3rem; }
-    .rich-content h2 { font-size: 1.1rem; }
-    .rich-content h3 { font-size: 0.95rem; }
-    .rich-content strong { color: var(--white); font-weight: 500; }
-    .rich-content em { font-style: italic; }
-    .rich-content u { text-decoration: underline; }
-    .rich-content s { text-decoration: line-through; opacity: 0.6; }
-    .rich-content a { color: var(--red); }
-    .rich-content blockquote { border-left: 2px solid var(--red-dim); padding-left: var(--space-md); color: var(--white-dim); font-style: italic; margin: var(--space-md) 0; }
-    .rich-content pre { background: var(--black); border: 1px solid var(--gray); padding: var(--space-md); overflow-x: auto; font-family: var(--font-body); font-size: 0.8rem; margin: var(--space-md) 0; }
-    .rich-content code { background: var(--black); padding: 2px 6px; font-family: var(--font-body); font-size: 0.8rem; }
-    .rich-content ul, .rich-content ol { padding-left: var(--space-lg); margin: var(--space-md) 0; }
-    .rich-content li { margin-bottom: var(--space-xs); }
-
-    /* BUTTONS */
-    .btn { font-family: var(--font-heading); font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; border: 1px solid var(--gray); background: var(--black); color: var(--white); padding: 6px 14px; cursor: pointer; transition: all 0.2s var(--ease); }
-    .btn:hover { border-color: var(--red); color: var(--red); }
-    .btn-primary { border-color: var(--red-dim); background: var(--red-dim); color: var(--white); }
-    .btn-primary:hover { background: var(--red); border-color: var(--red); }
-    .btn-danger { border-color: var(--gray); color: var(--white-dim); }
-    .btn-danger:hover { border-color: #ff4444; color: #ff4444; }
-    .btn-green { border-color: var(--green-dim); color: var(--green); }
-    .btn-green:hover { border-color: var(--green); background: var(--green-dim); color: var(--white); }
-    .btn-small { font-size: 0.6rem; padding: 4px 10px; }
-
-    .draft-badge { display: inline-block; font-family: var(--font-heading); font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; color: var(--black); background: var(--white-dim); padding: 2px 8px; margin-left: var(--space-sm); vertical-align: middle; }
-
-    /* MODALS */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; padding: var(--space-lg); }
-    .modal-overlay.visible { display: flex; }
-    .modal { background: var(--black-light); border: 1px solid var(--gray); padding: var(--space-lg); width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto; }
-    .modal h3 { font-family: var(--font-heading); font-size: 0.9rem; font-weight: 700; color: var(--red); letter-spacing: 1px; text-transform: uppercase; margin-bottom: var(--space-lg); }
-    .modal label { display: block; font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; color: var(--white-dim); margin-bottom: var(--space-xs); font-family: var(--font-heading); }
-    .modal input[type="text"], .modal input[type="email"], .modal input[type="password"] {
-      width: 100%; background: var(--black); border: 1px solid var(--gray); color: var(--white);
-      font-family: var(--font-body); font-size: 0.85rem; padding: var(--space-sm) var(--space-md);
-      margin-bottom: var(--space-md); outline: none; transition: border-color 0.2s var(--ease);
-    }
-    .modal input:focus { border-color: var(--red-dim); }
-    .modal .modal-actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-md); }
-    .modal .error-msg { color: var(--red); font-size: 0.75rem; margin-bottom: var(--space-md); display: none; }
-    .modal .error-msg.visible { display: block; }
-
-    /* QUILL EDITOR — Dark theme overrides */
-    .quill-wrap { margin-bottom: var(--space-md); border: 1px solid var(--gray); }
-    .quill-wrap .ql-toolbar.ql-snow { background: var(--black); border: none; border-bottom: 1px solid var(--gray); }
-    .quill-wrap .ql-toolbar .ql-stroke { stroke: var(--white-dim); }
-    .quill-wrap .ql-toolbar .ql-fill { fill: var(--white-dim); }
-    .quill-wrap .ql-toolbar .ql-picker-label { color: var(--white-dim); }
-    .quill-wrap .ql-toolbar .ql-picker-options { background: var(--black-light); border-color: var(--gray); }
-    .quill-wrap .ql-toolbar .ql-picker-item { color: var(--white-dim); }
-    .quill-wrap .ql-toolbar button:hover .ql-stroke, .quill-wrap .ql-toolbar .ql-picker-label:hover { stroke: var(--red); color: var(--red); }
-    .quill-wrap .ql-toolbar button:hover .ql-fill { fill: var(--red); }
-    .quill-wrap .ql-toolbar button.ql-active .ql-stroke { stroke: var(--red); }
-    .quill-wrap .ql-toolbar button.ql-active .ql-fill { fill: var(--red); }
-    .quill-wrap .ql-container.ql-snow { background: var(--black); border: none; color: var(--white); font-family: var(--font-body); font-size: 0.85rem; min-height: 200px; }
-    .quill-wrap .ql-editor { min-height: 200px; line-height: 1.7; }
-    .quill-wrap .ql-editor.ql-blank::before { color: var(--gray-light); font-style: italic; }
-    .quill-wrap .ql-editor a { color: var(--red); }
-    .quill-wrap .ql-snow .ql-tooltip { background: var(--black-light); border-color: var(--gray); color: var(--white); box-shadow: none; }
-    .quill-wrap .ql-snow .ql-tooltip input[type="text"] { background: var(--black); border-color: var(--gray); color: var(--white); }
-    /* Tile editor — shorter */
-    .quill-wrap-short .ql-container.ql-snow, .quill-wrap-short .ql-editor { min-height: 120px; }
-
-    .toast { position: fixed; bottom: var(--space-lg); left: 50%; transform: translateX(-50%) translateY(20px); background: var(--black-card); border: 1px solid var(--red-dim); color: var(--white); font-family: var(--font-heading); font-size: 0.75rem; letter-spacing: 1px; padding: var(--space-sm) var(--space-lg); z-index: 300; opacity: 0; transition: all 0.3s var(--ease); pointer-events: none; }
-    .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .section-loading { text-align: center; padding: var(--space-xl) 0; color: var(--white-dim); font-size: 0.85rem; }
-
-    /* CONNECT */
-    .connect { border-top: 1px solid var(--gray); }
-    .social-links { display: flex; flex-direction: column; gap: var(--space-md); margin-top: var(--space-lg); }
-    .social-link { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md) var(--space-lg); border: 1px solid var(--gray); background: var(--black-card); transition: all 0.3s var(--ease); text-decoration: none; }
-    .social-link:hover { border-color: var(--red-dim); opacity: 1; transform: translateX(4px); }
-    .social-link .social-icon { width: 20px; height: 20px; flex-shrink: 0; }
-    .social-link .social-icon svg { width: 100%; height: 100%; fill: var(--red); }
-    .social-link .social-info { flex: 1; }
-    .social-link .social-name { font-family: var(--font-heading); font-size: 0.8rem; font-weight: 700; color: var(--white); letter-spacing: 1px; }
-    .social-link .social-handle { font-size: 0.75rem; color: var(--white-dim); }
-    .social-link .social-arrow { color: var(--red); font-size: 1.2rem; transition: transform 0.2s var(--ease); }
-    .social-link:hover .social-arrow { transform: translateX(4px); }
-
-    /* FOOTER */
-    footer { border-top: 1px solid var(--gray); padding: var(--space-xl) 0; text-align: center; }
-    footer p { font-size: 0.75rem; color: var(--gray-light); }
-    footer .footer-character { margin-bottom: var(--space-md); opacity: 0.3; }
-
-    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-
-    @media (max-width: 640px) {
-      .hero-content { grid-template-columns: 1fr; text-align: center; justify-items: center; }
-      .character-wrap { width: 150px; height: 225px; }
-      .hero-text .tagline { margin-left: auto; margin-right: auto; }
-      .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; background: rgba(10,10,10,0.95); flex-direction: column; padding: var(--space-lg); gap: var(--space-md); border-bottom: 1px solid var(--gray); }
-      .nav-links.open { display: flex; }
-      .nav-toggle { display: block; }
-      .belief { padding-left: var(--space-md); }
-      section { padding: var(--space-xl) 0; }
-      .admin-toolbar { flex-direction: column; align-items: flex-start; }
-      .entry-controls { flex-direction: column; align-items: flex-start; }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth;font-size:16px}
+    body{background:var(--black);color:var(--white);font-family:var(--font-body);font-weight:300;line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}
+    ::selection{background:var(--red);color:var(--black)}
+    a{color:var(--red);text-decoration:none;transition:opacity 0.2s var(--ease)}a:hover{opacity:0.7}
+    .container{max-width:var(--max-width);margin:0 auto;padding:0 var(--space-lg)}
+    section{padding:var(--space-2xl) 0}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,10,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--gray);padding:var(--space-md) 0}
+    nav .container{display:flex;justify-content:space-between;align-items:center}
+    .nav-logo-group{display:flex;align-items:center;gap:var(--space-sm)}
+    .nav-logo{font-family:var(--font-heading);font-weight:700;font-size:0.85rem;color:var(--red);letter-spacing:2px;text-transform:uppercase}
+    .admin-login-link{cursor:pointer;color:var(--gray);transition:color 0.2s var(--ease);display:inline-flex;align-items:center;line-height:1}
+    .admin-login-link:hover{color:var(--white-dim)}
+    .admin-logout-link{display:none;cursor:pointer;color:var(--red-dim);transition:color 0.2s var(--ease);align-items:center;line-height:1}
+    .admin-logout-link:hover{color:var(--red)}
+    .nav-links{display:flex;gap:var(--space-lg);list-style:none}
+    .nav-links a{font-size:0.75rem;color:var(--white-dim);letter-spacing:1.5px;text-transform:uppercase;transition:color 0.2s var(--ease)}
+    .nav-links a:hover,.nav-links a.active{color:var(--red);opacity:1}
+    .nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:var(--space-sm)}
+    .nav-toggle span{display:block;width:20px;height:2px;background:var(--white);margin:4px 0}
+    .hero{min-height:100vh;display:flex;align-items:center;position:relative;padding-top:var(--space-xl)}
+    .hero::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:400px;height:400px;background:radial-gradient(circle,var(--red-glow) 0%,transparent 70%);pointer-events:none}
+    .hero-content{display:grid;grid-template-columns:200px 1fr;gap:var(--space-xl);align-items:center;position:relative;z-index:1}
+    .hero-text h1{font-family:var(--font-heading);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;line-height:1.1;margin-bottom:var(--space-md)}
+    .hero-text h1 .red{color:var(--red)}
+    .hero-text .tagline{font-size:0.95rem;color:var(--white-dim);margin-bottom:var(--space-lg);max-width:480px}
+    .hero-text .status{display:inline-flex;align-items:center;gap:var(--space-sm);font-size:0.75rem;color:var(--red);letter-spacing:1px;text-transform:uppercase}
+    .hero-text .status::before{content:'';width:6px;height:6px;background:var(--red);border-radius:50%;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+    .character-wrap{position:relative;width:200px;height:300px;animation:float 6s ease-in-out infinite}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .character-wrap svg{width:100%;height:100%;filter:drop-shadow(0 0 30px rgba(229,0,0,0.2))}
+    .about,.dashboard,.journal,.projects,.connect{border-top:1px solid var(--gray)}
+    .section-label{font-family:var(--font-heading);font-size:0.7rem;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:var(--space-lg)}
+    .section-title{font-family:var(--font-heading);font-size:clamp(1.4rem,3vw,2rem);font-weight:700;line-height:1.3;margin-bottom:var(--space-lg)}
+    .about-text p{margin-bottom:var(--space-md);color:var(--white-dim);font-size:0.9rem}
+    .beliefs{margin-top:var(--space-xl);display:grid;gap:var(--space-lg)}
+    .belief{padding-left:var(--space-lg);border-left:2px solid var(--red-dim)}
+    .belief h3{font-family:var(--font-heading);font-size:0.9rem;font-weight:700;margin-bottom:var(--space-sm);color:var(--white)}
+    .belief p{font-size:0.85rem;color:var(--white-dim)}
+    .admin-toolbar{display:none;margin-bottom:var(--space-lg);padding:var(--space-md) var(--space-lg);background:var(--black-card);border:1px solid var(--red-dim);align-items:center;justify-content:space-between;gap:var(--space-md)}
+    .admin-toolbar.visible{display:flex}
+    .admin-toolbar .toolbar-status{font-size:0.75rem;color:var(--red);font-family:var(--font-heading);letter-spacing:1px;text-transform:uppercase}
+    .admin-btn-inline{display:none;cursor:pointer;font-family:var(--font-heading);font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:var(--gray-light);background:none;border:1px solid var(--gray);padding:2px 8px;transition:all 0.2s var(--ease);margin-left:var(--space-sm);vertical-align:middle}
+    .admin-btn-inline:hover{color:var(--red);border-color:var(--red)}
+    .admin-btn-inline.visible{display:inline-block}
+    .item-controls{display:none;margin-top:var(--space-sm);gap:var(--space-sm)}
+    .item-controls.visible{display:flex}
+    .now-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-lg);margin-top:var(--space-lg)}
+    .now-card{background:var(--black-card);border:1px solid var(--gray);padding:var(--space-lg);transition:border-color 0.3s var(--ease)}
+    .now-card:hover{border-color:var(--red-dim)}
+    .now-card h3{font-family:var(--font-heading);font-size:0.8rem;font-weight:700;color:var(--red);letter-spacing:1px;text-transform:uppercase;margin-bottom:var(--space-md)}
+    .now-card p,.now-card .rich-content{font-size:0.85rem;color:var(--white-dim)}
+    .now-updated{margin-top:var(--space-lg);font-size:0.75rem;color:var(--gray-light);font-style:italic}
+    .project-card{background:var(--black-card);border:1px solid var(--gray);padding:var(--space-lg);margin-bottom:var(--space-lg);transition:border-color 0.3s var(--ease)}
+    .project-card:hover{border-color:var(--red-dim)}
+    .project-card .project-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-md);flex-wrap:wrap;gap:var(--space-sm)}
+    .project-card h3{font-family:var(--font-heading);font-size:1rem;font-weight:700}
+    .project-card .project-tags{display:flex;gap:var(--space-sm);flex-wrap:wrap}
+    .project-card .tag{font-size:0.65rem;letter-spacing:1px;text-transform:uppercase;color:var(--red);border:1px solid var(--red-dim);padding:2px 8px}
+    .project-card p{font-size:0.85rem;color:var(--white-dim);margin-bottom:var(--space-md)}
+    .project-card .project-link{font-size:0.8rem;font-family:var(--font-heading);letter-spacing:1px}
+    .journal-entry{padding-bottom:var(--space-xl);margin-bottom:var(--space-xl);border-bottom:1px solid var(--gray)}
+    .journal-entry:last-child{border-bottom:none}
+    .journal-entry .entry-date{font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:var(--space-sm)}
+    .journal-entry h3{font-family:var(--font-heading);font-size:1.1rem;font-weight:700;margin-bottom:var(--space-md);line-height:1.4}
+    .journal-entry p{font-size:0.88rem;color:var(--white-dim);margin-bottom:var(--space-md)}
+    .rich-content{color:var(--white-dim);line-height:1.7}
+    .rich-content p{margin-bottom:var(--space-md)}
+    .rich-content h1,.rich-content h2,.rich-content h3{font-family:var(--font-heading);color:var(--white);margin-bottom:var(--space-sm);margin-top:var(--space-md)}
+    .rich-content h1{font-size:1.3rem}.rich-content h2{font-size:1.1rem}.rich-content h3{font-size:0.95rem}
+    .rich-content strong{color:var(--white);font-weight:500}
+    .rich-content blockquote{border-left:2px solid var(--red-dim);padding-left:var(--space-md);font-style:italic;margin:var(--space-md) 0}
+    .rich-content pre{background:var(--black);border:1px solid var(--gray);padding:var(--space-md);overflow-x:auto;font-family:var(--font-body);font-size:0.8rem;margin:var(--space-md) 0}
+    .rich-content code{background:var(--black);padding:2px 6px;font-family:var(--font-body);font-size:0.8rem}
+    .rich-content ul,.rich-content ol{padding-left:var(--space-lg);margin:var(--space-md) 0}
+    .rich-content li{margin-bottom:var(--space-xs)}
+    .rich-content a{color:var(--red)}
+    .entry-controls{display:none;margin-top:var(--space-md);padding-top:var(--space-md);border-top:1px solid var(--gray);flex-wrap:wrap;gap:var(--space-sm);align-items:center}
+    .entry-controls.visible{display:flex}
+    .entry-controls .control-spacer{flex:1}
+    .share-group{display:flex;gap:var(--space-xs);align-items:center}
+    .share-label{font-size:0.6rem;color:var(--white-dim);letter-spacing:1px;text-transform:uppercase;margin-right:var(--space-xs)}
+    .social-links{display:flex;flex-direction:column;gap:var(--space-md);margin-top:var(--space-lg)}
+    .social-link{display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md) var(--space-lg);border:1px solid var(--gray);background:var(--black-card);transition:all 0.3s var(--ease);text-decoration:none}
+    .social-link:hover{border-color:var(--red-dim);opacity:1;transform:translateX(4px)}
+    .social-link .social-icon{width:20px;height:20px;flex-shrink:0}
+    .social-link .social-icon svg{width:100%;height:100%;fill:var(--red)}
+    .social-link .social-info{flex:1}
+    .social-link .social-name{font-family:var(--font-heading);font-size:0.8rem;font-weight:700;color:var(--white);letter-spacing:1px}
+    .social-link .social-handle{font-size:0.75rem;color:var(--white-dim)}
+    .social-link .social-arrow{color:var(--red);font-size:1.2rem;transition:transform 0.2s var(--ease)}
+    .social-link:hover .social-arrow{transform:translateX(4px)}
+    .btn{font-family:var(--font-heading);font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--gray);background:var(--black);color:var(--white);padding:6px 14px;cursor:pointer;transition:all 0.2s var(--ease)}
+    .btn:hover{border-color:var(--red);color:var(--red)}
+    .btn-primary{border-color:var(--red-dim);background:var(--red-dim);color:var(--white)}
+    .btn-primary:hover{background:var(--red);border-color:var(--red)}
+    .btn-danger{border-color:var(--gray);color:var(--white-dim)}.btn-danger:hover{border-color:#ff4444;color:#ff4444}
+    .btn-green{border-color:var(--green-dim);color:var(--green)}.btn-green:hover{border-color:var(--green);background:var(--green-dim);color:var(--white)}
+    .btn-small{font-size:0.6rem;padding:4px 10px}
+    .draft-badge{display:inline-block;font-family:var(--font-heading);font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:var(--black);background:var(--white-dim);padding:2px 8px;margin-left:var(--space-sm);vertical-align:middle}
+    .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;padding:var(--space-lg)}
+    .modal-overlay.visible{display:flex}
+    .modal{background:var(--black-light);border:1px solid var(--gray);padding:var(--space-lg);width:100%;max-width:700px;max-height:90vh;overflow-y:auto}
+    .modal h3{font-family:var(--font-heading);font-size:0.9rem;font-weight:700;color:var(--red);letter-spacing:1px;text-transform:uppercase;margin-bottom:var(--space-lg)}
+    .modal label{display:block;font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--white-dim);margin-bottom:var(--space-xs);font-family:var(--font-heading)}
+    .modal input[type="text"],.modal input[type="email"],.modal input[type="password"],.modal textarea,.modal select{width:100%;background:var(--black);border:1px solid var(--gray);color:var(--white);font-family:var(--font-body);font-size:0.85rem;padding:var(--space-sm) var(--space-md);margin-bottom:var(--space-md);outline:none;transition:border-color 0.2s var(--ease)}
+    .modal input:focus,.modal textarea:focus,.modal select:focus{border-color:var(--red-dim)}
+    .modal textarea{min-height:100px;resize:vertical;line-height:1.7}
+    .modal select{cursor:pointer;appearance:auto}
+    .modal .modal-actions{display:flex;gap:var(--space-sm);justify-content:flex-end;margin-top:var(--space-md)}
+    .modal .error-msg{color:var(--red);font-size:0.75rem;margin-bottom:var(--space-md);display:none}
+    .modal .error-msg.visible{display:block}
+    .quill-wrap{margin-bottom:var(--space-md);border:1px solid var(--gray)}
+    .quill-wrap .ql-toolbar.ql-snow{background:var(--black);border:none;border-bottom:1px solid var(--gray)}
+    .quill-wrap .ql-toolbar .ql-stroke{stroke:var(--white-dim)}.quill-wrap .ql-toolbar .ql-fill{fill:var(--white-dim)}
+    .quill-wrap .ql-toolbar .ql-picker-label{color:var(--white-dim)}
+    .quill-wrap .ql-toolbar .ql-picker-options{background:var(--black-light);border-color:var(--gray)}
+    .quill-wrap .ql-toolbar .ql-picker-item{color:var(--white-dim)}
+    .quill-wrap .ql-toolbar button:hover .ql-stroke,.quill-wrap .ql-toolbar .ql-picker-label:hover{stroke:var(--red);color:var(--red)}
+    .quill-wrap .ql-toolbar button:hover .ql-fill{fill:var(--red)}
+    .quill-wrap .ql-toolbar button.ql-active .ql-stroke{stroke:var(--red)}
+    .quill-wrap .ql-toolbar button.ql-active .ql-fill{fill:var(--red)}
+    .quill-wrap .ql-container.ql-snow{background:var(--black);border:none;color:var(--white);font-family:var(--font-body);font-size:0.85rem;min-height:200px}
+    .quill-wrap .ql-editor{min-height:200px;line-height:1.7}
+    .quill-wrap .ql-editor.ql-blank::before{color:var(--gray-light);font-style:italic}
+    .quill-wrap .ql-editor a{color:var(--red)}
+    .quill-wrap .ql-snow .ql-tooltip{background:var(--black-light);border-color:var(--gray);color:var(--white);box-shadow:none}
+    .quill-wrap .ql-snow .ql-tooltip input[type="text"]{background:var(--black);border-color:var(--gray);color:var(--white)}
+    .quill-wrap-short .ql-container.ql-snow,.quill-wrap-short .ql-editor{min-height:120px}
+    .toast{position:fixed;bottom:var(--space-lg);left:50%;transform:translateX(-50%) translateY(20px);background:var(--black-card);border:1px solid var(--red-dim);color:var(--white);font-family:var(--font-heading);font-size:0.75rem;letter-spacing:1px;padding:var(--space-sm) var(--space-lg);z-index:300;opacity:0;transition:all 0.3s var(--ease);pointer-events:none}
+    .toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
+    .section-loading{text-align:center;padding:var(--space-xl) 0;color:var(--white-dim);font-size:0.85rem}
+    footer{border-top:1px solid var(--gray);padding:var(--space-xl) 0;text-align:center}
+    footer p{font-size:0.75rem;color:var(--gray-light)}
+    footer .footer-character{margin-bottom:var(--space-md);opacity:0.3}
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity 0.6s var(--ease),transform 0.6s var(--ease)}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    @media(max-width:640px){
+      .hero-content{grid-template-columns:1fr;text-align:center;justify-items:center}
+      .character-wrap{width:150px;height:225px}
+      .hero-text .tagline{margin-left:auto;margin-right:auto}
+      .nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:rgba(10,10,10,0.95);flex-direction:column;padding:var(--space-lg);gap:var(--space-md);border-bottom:1px solid var(--gray)}
+      .nav-links.open{display:flex}.nav-toggle{display:block}
+      .belief{padding-left:var(--space-md)}
+      section{padding:var(--space-xl) 0}
+      .admin-toolbar{flex-direction:column;align-items:flex-start}
+      .entry-controls{flex-direction:column;align-items:flex-start}
     }
   </style>
 </head>
 <body>
-
-  <nav>
-    <div class="container">
-      <div class="nav-logo-group">
-        <a href="#" class="nav-logo">Malys</a>
-        <span class="admin-login-link" id="adminLoginLink" onclick="openLogin()" title="Admin login">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
-        </span>
-        <span class="admin-logout-link" id="adminLogoutLink" onclick="handleLogout()" title="Logout">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
-        </span>
-      </div>
-      <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
-      <ul class="nav-links">
-        <li><a href="#about">About</a></li>
-        <li><a href="#dashboard">Dashboard</a></li>
-        <li><a href="#projects">Projects</a></li>
-        <li><a href="#journal">Journal</a></li>
-        <li><a href="#connect">Connect</a></li>
-      </ul>
+  <nav><div class="container">
+    <div class="nav-logo-group">
+      <a href="#" class="nav-logo">Malys</a>
+      <span class="admin-login-link" id="adminLoginLink" onclick="openLogin()" title="Admin login"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></span>
+      <span class="admin-logout-link" id="adminLogoutLink" onclick="handleLogout()" title="Logout"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></span>
     </div>
-  </nav>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li><li><a href="#dashboard">Dashboard</a></li>
+      <li><a href="#projects">Projects</a></li><li><a href="#journal">Journal</a></li><li><a href="#connect">Connect</a></li>
+    </ul>
+  </div></nav>
 
-  <section class="hero" id="top">
-    <div class="container"><div class="hero-content">
-      <div class="character-wrap">
-        <svg viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">
-          <path d="M100 20 C50 20,20 70,20 130 C20 180,30 220,40 260 L60 290 L140 290 L160 260 C170 220,180 180,180 130 C180 70,150 20,100 20Z" fill="#0a0a0a" stroke="#1a1a1a" stroke-width="1"/>
-          <path d="M100 30 C58 30,32 75,32 128 C32 170,38 200,45 235 L65 275 L135 275 L155 235 C162 200,168 170,168 128 C168 75,142 30,100 30Z" fill="#050505"/>
-          <path d="M66 100 Q80 82,98 96" fill="none" stroke="#e50000" stroke-width="6" stroke-linecap="round"/>
-          <line x1="113" y1="88" x2="135" y2="110" stroke="#e50000" stroke-width="7" stroke-linecap="round"/>
-          <line x1="135" y1="88" x2="113" y2="110" stroke="#e50000" stroke-width="7" stroke-linecap="round"/>
-          <polygon points="58,126 66,144 74,126" fill="#e50000"/><polygon points="78,126 86,146 94,126" fill="#e50000"/><polygon points="98,125 106,146 114,125" fill="#e50000"/><polygon points="118,126 126,146 134,126" fill="#e50000"/>
-          <polygon points="66,148 74,130 82,148" fill="#e50000"/><polygon points="88,150 96,130 104,150" fill="#e50000"/><polygon points="110,150 118,130 126,150" fill="#e50000"/><polygon points="130,148 138,132 146,148" fill="#e50000"/>
-          <path d="M35 220 Q20 215,18 200 Q16 210,22 222 Q15 218,12 205 Q12 215,20 228 L35 235Z" fill="#1a1a1a" stroke="#e50000" stroke-width="0.5" opacity="0.6"/>
-          <path d="M165 220 Q180 215,182 200 Q184 210,178 222 Q185 218,188 205 Q188 215,180 228 L165 235Z" fill="#1a1a1a" stroke="#e50000" stroke-width="0.5" opacity="0.6"/>
-          <path d="M60 290 L65 280 L75 290 L85 278 L95 290 L105 278 L115 290 L125 278 L135 290 L140 280 L140 290Z" fill="#0a0a0a" stroke="#1a1a1a" stroke-width="0.5"/>
-        </svg>
-      </div>
-      <div class="hero-text">
-        <h1>hey, i'm <span class="red">malys</span></h1>
-        <p class="tagline">learning to code a dozen rabbitholes at a time, tinkering with linux, building things, breaking things, learning as much as possible, and trying to enjoy the process without burning out.</p>
-        <span class="status">doin stuff/researching</span>
-      </div>
-    </div></div>
-  </section>
+  <section class="hero" id="top"><div class="container"><div class="hero-content">
+    <div class="character-wrap"><svg viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">
+      <path d="M100 20 C50 20,20 70,20 130 C20 180,30 220,40 260 L60 290 L140 290 L160 260 C170 220,180 180,180 130 C180 70,150 20,100 20Z" fill="#0a0a0a" stroke="#1a1a1a" stroke-width="1"/>
+      <path d="M100 30 C58 30,32 75,32 128 C32 170,38 200,45 235 L65 275 L135 275 L155 235 C162 200,168 170,168 128 C168 75,142 30,100 30Z" fill="#050505"/>
+      <path d="M66 100 Q80 82,98 96" fill="none" stroke="#e50000" stroke-width="6" stroke-linecap="round"/>
+      <line x1="113" y1="88" x2="135" y2="110" stroke="#e50000" stroke-width="7" stroke-linecap="round"/><line x1="135" y1="88" x2="113" y2="110" stroke="#e50000" stroke-width="7" stroke-linecap="round"/>
+      <polygon points="58,126 66,144 74,126" fill="#e50000"/><polygon points="78,126 86,146 94,126" fill="#e50000"/><polygon points="98,125 106,146 114,125" fill="#e50000"/><polygon points="118,126 126,146 134,126" fill="#e50000"/>
+      <polygon points="66,148 74,130 82,148" fill="#e50000"/><polygon points="88,150 96,130 104,150" fill="#e50000"/><polygon points="110,150 118,130 126,150" fill="#e50000"/><polygon points="130,148 138,132 146,148" fill="#e50000"/>
+      <path d="M35 220 Q20 215,18 200 Q16 210,22 222 Q15 218,12 205 Q12 215,20 228 L35 235Z" fill="#1a1a1a" stroke="#e50000" stroke-width="0.5" opacity="0.6"/>
+      <path d="M165 220 Q180 215,182 200 Q184 210,178 222 Q185 218,188 205 Q188 215,180 228 L165 235Z" fill="#1a1a1a" stroke="#e50000" stroke-width="0.5" opacity="0.6"/>
+      <path d="M60 290 L65 280 L75 290 L85 278 L95 290 L105 278 L115 290 L125 278 L135 290 L140 280 L140 290Z" fill="#0a0a0a" stroke="#1a1a1a" stroke-width="0.5"/>
+    </svg></div>
+    <div class="hero-text" id="heroContent"></div>
+  </div></div></section>
 
-  <section class="about" id="about">
-    <div class="container">
-      <div class="section-label reveal">Beliefs</div>
-      <h2 class="section-title reveal">the stuff that actually matters</h2>
-      <div class="about-text reveal">
-        <p>I went from being a casual windows consumer to installing linux on a dusty alienware laptop and falling into the deepest rabbithole of my life. One month in and I've already shipped my first repo, broken my system more times than I can count, and realized that writing things out is maybe a little therapeutic.</p>
-        <p>Some of the 37signals really resonate with me such as the idea that you can build something real without burning yourself to the ground. That simplicity isn't laziness, it's discipline. That you don't need permission to start, you just need to start.</p>
-      </div>
-      <div class="beliefs">
-        <div class="belief reveal"><h3>learn by building, not just consuming</h3><p>Grinding through lessons has its place, but the real learning happens when you make something, break it, and figure out why. My first repo is small and kinda rough but it taught me more than any tutorial.</p></div>
-        <div class="belief reveal"><h3>ship it, even if it's embarrassing</h3><p>Perfectionism is the enemy. Put it out there. You can't get feedback on code that lives only on your machine. The act of making something public changes how you think about it.</p></div>
-        <div class="belief reveal"><h3>slow down to go faster</h3><p>The can't-stop-won't-stop mindset is fun until you crash. Sustainable pace beats heroic sprints. 37signals runs on 40-hour weeks and they've been profitable for 25 years. There's something to that.</p></div>
-        <div class="belief reveal"><h3>own your space</h3><p>This site exists because a reddit post got deleted before anyone could see it. That's fine. But it's a reminder: if you want a voice that can't be moderated away, you need your own corner of the internet.</p></div>
-        <div class="belief reveal"><h3>ai is a tool, not a crutch</h3><p>I use AI. I'm not going to pretend I don't. But the goal is to understand what the code does, not just to generate it. The basics matter. You can't debug what you don't understand.</p></div>
-        <div class="belief reveal"><h3>keep going, keep writing</h3><p>Writing things out organizes thoughts better than any productivity system. This whole site started because I realized journaling helps me process what I'm learning. So here we are.</p></div>
-        <div class="belief reveal"><h3>sleep on it. seriously. just do it.</h3><p>instant gratification is great and all but isn't gonna be sustainable, start planning a little more thoroughly, don't get stagnant though.</p></div>
-      </div>
-    </div>
-  </section>
+  <section class="about" id="about"><div class="container">
+    <div class="section-label reveal">Beliefs</div>
+    <h2 class="section-title reveal">the stuff that actually matters <button class="admin-btn-inline" id="editAboutBtn" onclick="openAboutEditor()">edit intro</button></h2>
+    <div class="about-text reveal" id="aboutIntro"></div>
+    <div class="admin-toolbar" id="beliefsToolbar"><span class="toolbar-status">beliefs</span><button class="btn btn-primary" onclick="openBeliefEditor()">+ add belief</button></div>
+    <div class="beliefs" id="beliefsList"></div>
+  </div></section>
 
-  <section class="dashboard" id="dashboard">
-    <div class="container">
-      <div class="section-label reveal">Dashboard</div>
-      <h2 class="section-title reveal">dashboard</h2>
-      <div class="admin-toolbar" id="dashboardToolbar"><span class="toolbar-status">admin mode</span><button class="btn btn-primary" onclick="openTileEditor()">+ new tile</button></div>
-      <div class="now-grid" id="dashboardTiles"><div class="section-loading">loading dashboard...</div></div>
-      <p class="now-updated reveal">Last updated: March 2026</p>
-    </div>
-  </section>
+  <section class="dashboard" id="dashboard"><div class="container">
+    <div class="section-label reveal">Dashboard</div>
+    <h2 class="section-title reveal">dashboard</h2>
+    <div class="admin-toolbar" id="dashboardToolbar"><span class="toolbar-status">admin mode</span><button class="btn btn-primary" onclick="openTileEditor()">+ new tile</button></div>
+    <div class="now-grid" id="dashboardTiles"><div class="section-loading">loading...</div></div>
+    <p class="now-updated reveal">Last updated: March 2026</p>
+  </div></section>
 
-  <section class="projects" id="projects">
-    <div class="container">
-      <div class="section-label reveal">Projects</div>
-      <h2 class="section-title reveal">things i've built</h2>
-      <div class="project-card reveal">
-        <div class="project-header"><h3>i3 Keybinding Cheatsheet &amp; Editor</h3><div class="project-tags"><span class="tag">Python</span><span class="tag">Web UI</span><span class="tag">i3wm</span></div></div>
-        <p>My first repo. Parses an i3 config file and serves a local web UI for viewing and editing keybindings. Nothing huge, almost kinda embarrassing, but it felt good to put something real out on the internet. And I learned a ton building it.</p>
-        <a href="https://github.com/Malys-Botware/i3-keybindings-cheatsheet" class="project-link">view on github →</a>
-      </div>
-      <div class="project-card reveal">
-        <div class="project-header"><h3>This Website</h3><div class="project-tags"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JS</span><span class="tag">Supabase</span></div></div>
-        <p>A single-file personal site built to be readable, learnable, and easy to modify. No frameworks. No build steps. Just a text editor and a browser. An ongoing project to learn web development while having something to show for it.</p>
-        <a href="https://github.com/Malys-Botware/Malys-Botware.github.io" class="project-link">view source →</a>
-      </div>
-    </div>
-  </section>
+  <section class="projects" id="projects"><div class="container">
+    <div class="section-label reveal">Projects</div>
+    <h2 class="section-title reveal">things i've built</h2>
+    <div class="admin-toolbar" id="projectsToolbar"><span class="toolbar-status">projects</span><button class="btn btn-primary" onclick="openProjectEditor()">+ add project</button></div>
+    <div id="projectsList"></div>
+  </div></section>
 
-  <section class="journal" id="journal">
-    <div class="container">
-      <div class="section-label reveal">Journal</div>
-      <h2 class="section-title reveal">thinking out loud</h2>
-      <div class="admin-toolbar" id="journalToolbar"><span class="toolbar-status">admin mode</span><button class="btn btn-primary" onclick="openEntryEditor()">+ new entry</button></div>
-      <div id="journalEntries"><div class="section-loading">loading journal...</div></div>
-    </div>
-  </section>
+  <section class="journal" id="journal"><div class="container">
+    <div class="section-label reveal">Journal</div>
+    <h2 class="section-title reveal">thinking out loud</h2>
+    <div class="admin-toolbar" id="journalToolbar"><span class="toolbar-status">admin mode</span><button class="btn btn-primary" onclick="openEntryEditor()">+ new entry</button></div>
+    <div id="journalEntries"><div class="section-loading">loading...</div></div>
+  </div></section>
 
-  <section class="connect" id="connect">
-    <div class="container">
-      <div class="section-label reveal">Connect</div>
-      <h2 class="section-title reveal">find me elsewhere</h2>
-      <div class="social-links">
-        <a href="https://github.com/Malys-Botware" class="social-link reveal" target="_blank" rel="noopener"><div class="social-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg></div><div class="social-info"><div class="social-name">GitHub</div><div class="social-handle">Malys-Botware</div></div><span class="social-arrow">→</span></a>
-        <a href="https://x.com/Malys520572" class="social-link reveal" target="_blank" rel="noopener"><div class="social-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div><div class="social-info"><div class="social-name">X</div><div class="social-handle">@Malys520572</div></div><span class="social-arrow">→</span></a>
-        <a href="https://reddit.com/u/Electrical_Funny6177" class="social-link reveal" target="_blank" rel="noopener"><div class="social-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 01-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 01.042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 014.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 01.14-.197.35.35 0 01.238-.042l2.906.617a1.214 1.214 0 011.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 00-.231.094.33.33 0 000 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 000-.463.327.327 0 00-.462 0c-.545.533-1.684.73-2.512.73-.828 0-1.967-.197-2.512-.73a.326.326 0 00-.205-.094z"/></svg></div><div class="social-info"><div class="social-name">Reddit</div><div class="social-handle">u/Electrical_Funny6177</div></div><span class="social-arrow">→</span></a>
-      </div>
-    </div>
-  </section>
+  <section class="connect" id="connect"><div class="container">
+    <div class="section-label reveal">Connect</div>
+    <h2 class="section-title reveal">find me elsewhere</h2>
+    <div class="admin-toolbar" id="socialToolbar"><span class="toolbar-status">social links</span><button class="btn btn-primary" onclick="openSocialEditor()">+ add link</button></div>
+    <div class="social-links" id="socialLinksList"></div>
+  </div></section>
 
-  <footer>
-    <div class="container">
-      <div class="footer-character"><svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M18 48 Q32 28,50 44" fill="none" stroke="#e50000" stroke-width="6" stroke-linecap="round"/><line x1="60" y1="32" x2="80" y2="52" stroke="#e50000" stroke-width="7" stroke-linecap="round"/><line x1="80" y1="32" x2="60" y2="52" stroke="#e50000" stroke-width="7" stroke-linecap="round"/><polygon points="12,64 22,82 32,64" fill="#e50000"/><polygon points="36,64 46,84 56,64" fill="#e50000"/><polygon points="60,64 70,84 80,64" fill="#e50000"/><polygon points="24,86 34,68 44,86" fill="#e50000"/><polygon points="48,86 58,68 68,86" fill="#e50000"/><polygon points="72,86 82,70 92,86" fill="#e50000"/></svg></div>
-      <p>built by thought, one prompt or line at a time.</p>
-      <p style="margin-top: 4px;">keep on keepin' on.</p>
-    </div>
-  </footer>
+  <footer><div class="container">
+    <div class="footer-character"><svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M18 48 Q32 28,50 44" fill="none" stroke="#e50000" stroke-width="6" stroke-linecap="round"/><line x1="60" y1="32" x2="80" y2="52" stroke="#e50000" stroke-width="7" stroke-linecap="round"/><line x1="80" y1="32" x2="60" y2="52" stroke="#e50000" stroke-width="7" stroke-linecap="round"/><polygon points="12,64 22,82 32,64" fill="#e50000"/><polygon points="36,64 46,84 56,64" fill="#e50000"/><polygon points="60,64 70,84 80,64" fill="#e50000"/><polygon points="24,86 34,68 44,86" fill="#e50000"/><polygon points="48,86 58,68 68,86" fill="#e50000"/><polygon points="72,86 82,70 92,86" fill="#e50000"/></svg></div>
+    <div id="footerContent"></div>
+  </div></footer>
 
-  <!-- LOGIN MODAL -->
-  <div class="modal-overlay" id="loginModal"><div class="modal">
-    <h3>Admin Login</h3>
-    <div class="error-msg" id="loginError"></div>
-    <label for="loginEmail">Email</label><input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
-    <label for="loginPassword">Password</label><input type="password" id="loginPassword" placeholder="password" autocomplete="current-password">
-    <div class="modal-actions"><button class="btn" onclick="closeLogin()">Cancel</button><button class="btn btn-primary" onclick="handleLogin()">Login</button></div>
-  </div></div>
+  <!-- MODALS -->
+  <div class="modal-overlay" id="loginModal"><div class="modal"><h3>Admin Login</h3><div class="error-msg" id="loginError"></div><label>Email</label><input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email"><label>Password</label><input type="password" id="loginPassword" placeholder="password" autocomplete="current-password"><div class="modal-actions"><button class="btn" onclick="closeModal('loginModal')">Cancel</button><button class="btn btn-primary" onclick="handleLogin()">Login</button></div></div></div>
 
-  <!-- JOURNAL ENTRY EDITOR -->
-  <div class="modal-overlay" id="entryEditorModal"><div class="modal">
-    <h3 id="entryEditorTitle">New Entry</h3>
-    <div class="error-msg" id="entryEditorError"></div>
-    <label for="entryTitle">Title</label><input type="text" id="entryTitle" placeholder="entry title">
-    <label for="entryDate">Date</label><input type="text" id="entryDate" placeholder="March 14, 2026">
-    <label>Content</label>
-    <div class="quill-wrap" id="entryEditorWrap"><div id="entryEditorQuill"></div></div>
-    <div class="modal-actions"><button class="btn" onclick="closeEntryEditor()">Cancel</button><button class="btn btn-primary" id="entryEditorSaveBtn" onclick="saveEntry()">Save Draft</button></div>
-  </div></div>
+  <div class="modal-overlay" id="heroEditorModal"><div class="modal"><h3>Edit Hero</h3><div class="error-msg" id="heroEditorError"></div><label>Name</label><input type="text" id="heroName" placeholder="malys"><label>Tagline</label><textarea id="heroTagline" placeholder="your tagline..." style="min-height:80px"></textarea><label>Status</label><input type="text" id="heroStatus" placeholder="doin stuff/researching"><div class="modal-actions"><button class="btn" onclick="closeModal('heroEditorModal')">Cancel</button><button class="btn btn-primary" onclick="saveHero()">Save</button></div></div></div>
 
-  <!-- DASHBOARD TILE EDITOR -->
-  <div class="modal-overlay" id="tileEditorModal"><div class="modal">
-    <h3 id="tileEditorTitle">New Tile</h3>
-    <div class="error-msg" id="tileEditorError"></div>
-    <label for="tileTitle">Title</label><input type="text" id="tileTitle" placeholder="tile title">
-    <label>Content</label>
-    <div class="quill-wrap quill-wrap-short" id="tileEditorWrap"><div id="tileEditorQuill"></div></div>
-    <div class="modal-actions"><button class="btn" onclick="closeTileEditor()">Cancel</button><button class="btn btn-primary" id="tileEditorSaveBtn" onclick="saveTile()">Save Draft</button></div>
-  </div></div>
+  <div class="modal-overlay" id="aboutEditorModal"><div class="modal"><h3>Edit About Intro</h3><div class="error-msg" id="aboutEditorError"></div><label>Intro text (separate paragraphs with blank lines)</label><textarea id="aboutIntroText" style="min-height:160px" placeholder="your about text..."></textarea><div class="modal-actions"><button class="btn" onclick="closeModal('aboutEditorModal')">Cancel</button><button class="btn btn-primary" onclick="saveAbout()">Save</button></div></div></div>
+
+  <div class="modal-overlay" id="beliefEditorModal"><div class="modal"><h3 id="beliefEditorTitle">New Belief</h3><div class="error-msg" id="beliefEditorError"></div><label>Title</label><input type="text" id="beliefTitle" placeholder="belief title"><label>Description</label><textarea id="beliefContent" placeholder="what this means to you..."></textarea><div class="modal-actions"><button class="btn" onclick="closeModal('beliefEditorModal')">Cancel</button><button class="btn btn-primary" id="beliefEditorSaveBtn" onclick="saveBelief()">Save</button></div></div></div>
+
+  <div class="modal-overlay" id="tileEditorModal"><div class="modal"><h3 id="tileEditorTitle">New Tile</h3><div class="error-msg" id="tileEditorError"></div><label>Title</label><input type="text" id="tileTitle" placeholder="tile title"><label>Content</label><div class="quill-wrap quill-wrap-short" id="tileEditorWrap"><div id="tileEditorQuill"></div></div><div class="modal-actions"><button class="btn" onclick="closeModal('tileEditorModal')">Cancel</button><button class="btn btn-primary" id="tileEditorSaveBtn" onclick="saveTile()">Save Draft</button></div></div></div>
+
+  <div class="modal-overlay" id="projectEditorModal"><div class="modal"><h3 id="projectEditorTitle">New Project</h3><div class="error-msg" id="projectEditorError"></div><label>Title</label><input type="text" id="projectTitle" placeholder="project name"><label>Tags (comma-separated)</label><input type="text" id="projectTags" placeholder="Python, Web UI, i3wm"><label>Description</label><textarea id="projectDesc" placeholder="what this project does..."></textarea><label>Link URL</label><input type="text" id="projectUrl" placeholder="https://github.com/..."><label>Link Text</label><input type="text" id="projectLinkText" placeholder="view on github \u2192"><div class="modal-actions"><button class="btn" onclick="closeModal('projectEditorModal')">Cancel</button><button class="btn btn-primary" id="projectEditorSaveBtn" onclick="saveProject()">Save</button></div></div></div>
+
+  <div class="modal-overlay" id="entryEditorModal"><div class="modal"><h3 id="entryEditorTitle">New Entry</h3><div class="error-msg" id="entryEditorError"></div><label>Title</label><input type="text" id="entryTitle" placeholder="entry title"><label>Date</label><input type="text" id="entryDate" placeholder="March 14, 2026"><label>Content</label><div class="quill-wrap"><div id="entryEditorQuill"></div></div><div class="modal-actions"><button class="btn" onclick="closeModal('entryEditorModal')">Cancel</button><button class="btn btn-primary" id="entryEditorSaveBtn" onclick="saveEntry()">Save Draft</button></div></div></div>
+
+  <div class="modal-overlay" id="socialEditorModal"><div class="modal"><h3 id="socialEditorTitle">New Social Link</h3><div class="error-msg" id="socialEditorError"></div><label>Platform</label><select id="socialIcon"><option value="github">GitHub</option><option value="x">X (Twitter)</option><option value="reddit">Reddit</option><option value="linkedin">LinkedIn</option><option value="discord">Discord</option><option value="youtube">YouTube</option><option value="twitch">Twitch</option><option value="email">Email</option><option value="website">Website</option></select><label>Display Name</label><input type="text" id="socialName" placeholder="GitHub"><label>Handle / Username</label><input type="text" id="socialHandle" placeholder="Malys-Botware"><label>URL</label><input type="text" id="socialUrl" placeholder="https://github.com/Malys-Botware"><div class="modal-actions"><button class="btn" onclick="closeModal('socialEditorModal')">Cancel</button><button class="btn btn-primary" id="socialEditorSaveBtn" onclick="saveSocial()">Save</button></div></div></div>
+
+  <div class="modal-overlay" id="footerEditorModal"><div class="modal"><h3>Edit Footer</h3><div class="error-msg" id="footerEditorError"></div><label>Line 1</label><input type="text" id="footerLine1" placeholder="built by thought..."><label>Line 2</label><input type="text" id="footerLine2" placeholder="keep on keepin' on."><div class="modal-actions"><button class="btn" onclick="closeModal('footerEditorModal')">Cancel</button><button class="btn btn-primary" onclick="saveFooter()">Save</button></div></div></div>
 
   <div class="toast" id="toast"></div>
 
-  <!--
-    JAVASCRIPT — Supabase init, auth, dashboard CRUD, journal CRUD,
-    Quill rich text editors, share, scroll reveal, active nav.
-    Dependencies: @supabase/supabase-js v2 (MIT), Quill v2 (BSD-3-Clause)
-    Built with assistance from Claude (Anthropic).
-  -->
   <script>
-    const SUPABASE_URL = 'https://ytligjypmspdqnbrauem.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0bGlnanlwbXNwZHFuYnJhdWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1NDU0OTQsImV4cCI6MjA4OTEyMTQ5NH0.9Rpe98KuIJ5Tgh7C4rq8uqtarWcdLnJsFC9myxVJ3bo';
-    const isSupabaseConfigured = SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY';
-    let supabaseClient = null;
-    if (isSupabaseConfigured && window.supabase) { supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+    /* CONFIG */
+    const SUPABASE_URL='YOUR_SUPABASE_URL';
+    const SUPABASE_ANON_KEY='YOUR_SUPABASE_ANON_KEY';
+    const isSupabaseConfigured=SUPABASE_URL!=='YOUR_SUPABASE_URL'&&SUPABASE_ANON_KEY!=='YOUR_SUPABASE_ANON_KEY';
+    let supabaseClient=null;
+    if(isSupabaseConfigured&&window.supabase){supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);}
 
-    let currentUser = null;
-    let editingEntryId = null;
-    let editingTileId = null;
+    let currentUser=null,editingId=null,editingType=null;
+    const SITE_URL='https://malys-botware.github.io';
 
-    /* QUILL EDITORS — initialized once on page load */
-    const quillToolbar = [
-      [{ header: [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ list: 'ordered' }, { list: 'bullet' }],
-      ['blockquote', 'code-block'],
-      ['link'],
-      ['clean']
-    ];
-    const entryQuill = new Quill('#entryEditorQuill', { theme: 'snow', modules: { toolbar: quillToolbar }, placeholder: 'write your thoughts here...' });
-    const tileQuill = new Quill('#tileEditorQuill', { theme: 'snow', modules: { toolbar: quillToolbar }, placeholder: "what's going on in this area..." });
+    /* QUILL EDITORS */
+    const qCfg={theme:'snow',modules:{toolbar:[[{header:[1,2,3,false]}],['bold','italic','underline','strike'],[{list:'ordered'},{list:'bullet'}],['blockquote','code-block'],['link'],['clean']]}};
+    const entryQuill=new Quill('#entryEditorQuill',{...qCfg,placeholder:'write your thoughts here...'});
+    const tileQuill=new Quill('#tileEditorQuill',{...qCfg,placeholder:"what's going on in this area..."});
 
-    /* STATIC FALLBACK — plain text converted to HTML paragraphs */
-    function textToHtml(text) { return text.split(/\n\n+/).map(function(p) { return '<p>' + p.trim().replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p>'; }).join(''); }
-
-    const STATIC_TILES = [
-      { id:'st-1', title:'System', content: textToHtml("D.E.'s: Cosmic and i3 till im happy with the i3 config\nthings to fix in i3:\n\n- some apps not working properly or as expected\n\nex. - mission control opens to blank/translucent window\n\n- garuda toolbox can't run certain diags or sys update \"Error creating textual authentication agent: error opening current controlling terminal for the process ('/dev/tty'): no such device or address\". ?? works fine on cosmic though.\n\ngeneral: lockscreen needs theme still"), published: true, sort_order: 1 },
-      { id:'st-2', title:'Lessons', content:'<p>- Onward from ch3 at last! got to ch5 l2</p>', published: true, sort_order: 2 },
-      { id:'st-3', title:'This Site', content:'<p>- tweak "hero"</p>', published: true, sort_order: 3 },
-      { id:'st-4', title:'Keybindings Cheatsheet / Editor', content: textToHtml("undecided where i want to go with it rn, seems to be functioning as expected.\n\ngonna try to learn how exactly it works before going too much farther."), published: true, sort_order: 4 }
-    ];
-
-    const STATIC_ENTRIES = [
-      { id:'se-3', entry_date:'March 14, 2026', title:'lesson day', content: textToHtml("how many lessons can you get through? be sure to use potions if you have the gems! don't forget about the other usefull tools at your disposal like embers, potions, quests and more!\n\ntalk to boots if needed! he can be rather helpful if you talk through your problem with him!\n\ngo back and review your previous couple lessons or maybe even chapters! especially if you had an extended session previously"), published: true },
-      { id:'se-2', entry_date:'March 13, 2026', title:'veg day', content: textToHtml("just a day to sit back and breath. lay back, get comfy and poke around in the tools you're learning or go browse some youtube / twitch / whatever tickles your fancy. or maybe you've been putting off a project around the house, gaming? nows the day\n\nwhat i got up to today: explored github some more. all commits updating the site today done from github, without AI. just the keyboard and a little mouse action here and there thought about getting back into boot.dev but just need to let my brain settle. watched some youtube. answered a q wrong on x shoulda been pwd - print working directory shows absolute path ended up doing a couple/few lessons\n\nfairly light easy day, weather coulda beem nicer, plans for tomorrow? hmm."), published: true },
-      { id:'se-1', entry_date:'March 12, 2026', title:'the post that started this', content: textToHtml("I wrote a long post on r/learnprogramming. Put real thought into it \u2014 where I'm at, what I'm struggling with, honest questions about balancing learning with building, time management, and how an introvert starts connecting with other people in tech. The mods removed it before anyone could even read it.\n\nAnd you know what? No ill will. The sub has rules and I probably should've read the FAQ more carefully. But it did help me realize something: I need my own space. Somewhere my thoughts can exist without getting caught in someone else's filter.\n\nSo here we are. This site is that space. It started as frustration but turned into something I'm actually excited about. Just writing that reddit post \u2014 even though nobody saw it \u2014 helped me organize my thoughts. Turns out writing things down is weirdly therapeutic. Who knew.\n\nI'm about a month into learning to code. Started by installing linux on an old alienware laptop. Put my first repo on github yesterday \u2014 an i3 keybinding cheatsheet and editor. It's small but it's real and it's mine. Every new thing I learn opens another door and then I'm down the next rabbithole. Can't stop won't stop... until I crash. Then repeat.\n\nI know I need to slow down. I know I rely on AI too much. I know I should talk to actual humans more. I'm working on all of it. But at least now I have somewhere to write about the process while I figure it out.\n\nGonna keep on keepin' on, I suppose."), published: true }
-    ];
-
-    /* Render content — handles both HTML (from Quill) and plain text (legacy) */
-    function renderContent(content) {
-      if (content.trim().startsWith('<')) return content; /* Already HTML */
-      return textToHtml(content); /* Plain text fallback */
+    /* ICON SVG PATHS */
+    const ICONS={
+      github:'M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z',
+      x:'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
+      reddit:'M12 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 01-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 01.042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 014.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 01.14-.197.35.35 0 01.238-.042l2.906.617a1.214 1.214 0 011.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 00-.231.094.33.33 0 000 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 000-.463.327.327 0 00-.462 0c-.545.533-1.684.73-2.512.73-.828 0-1.967-.197-2.512-.73a.326.326 0 00-.205-.094z',
+      linkedin:'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z',
+      discord:'M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z',
+      youtube:'M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
+      twitch:'M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z',
+      email:'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6',
+      website:'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'
+    };
+    function iconSvg(key){
+      var p=ICONS[key]||ICONS.website;
+      if(key==='email') return '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"><path d="'+p+'"/></svg>';
+      return '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="'+p+'"/></svg>';
     }
+
+    /* STATIC FALLBACKS */
+    const S_SETTINGS={hero_name:'malys',hero_tagline:'learning to code a dozen rabbitholes at a time, tinkering with linux, building things, breaking things, learning as much as possible, and trying to enjoy the process without burning out.',hero_status:'doin stuff/researching',about_intro:'I went from being a casual windows consumer to installing linux on a dusty alienware laptop and falling into the deepest rabbithole of my life. One month in and I\'ve already shipped my first repo, broken my system more times than I can count, and realized that writing things out is maybe a little therapeutic.\n\nSome of the 37signals really resonate with me such as the idea that you can build something real without burning yourself to the ground. That simplicity isn\'t laziness, it\'s discipline. That you don\'t need permission to start, you just need to start.',footer_line1:'built by thought, one prompt or line at a time.',footer_line2:'keep on keepin\' on.'};
+    const S_BELIEFS=[
+      {id:'sb1',title:'learn by building, not just consuming',content:'Grinding through lessons has its place, but the real learning happens when you make something, break it, and figure out why. My first repo is small and kinda rough but it taught me more than any tutorial.',sort_order:1},
+      {id:'sb2',title:'ship it, even if it\'s embarrassing',content:'Perfectionism is the enemy. Put it out there. You can\'t get feedback on code that lives only on your machine. The act of making something public changes how you think about it.',sort_order:2},
+      {id:'sb3',title:'slow down to go faster',content:'The can\'t-stop-won\'t-stop mindset is fun until you crash. Sustainable pace beats heroic sprints. 37signals runs on 40-hour weeks and they\'ve been profitable for 25 years. There\'s something to that.',sort_order:3},
+      {id:'sb4',title:'own your space',content:'This site exists because a reddit post got deleted before anyone could see it. That\'s fine. But it\'s a reminder: if you want a voice that can\'t be moderated away, you need your own corner of the internet.',sort_order:4},
+      {id:'sb5',title:'ai is a tool, not a crutch',content:'I use AI. I\'m not going to pretend I don\'t. But the goal is to understand what the code does, not just to generate it. The basics matter. You can\'t debug what you don\'t understand.',sort_order:5},
+      {id:'sb6',title:'keep going, keep writing',content:'Writing things out organizes thoughts better than any productivity system. This whole site started because I realized journaling helps me process what I\'m learning. So here we are.',sort_order:6},
+      {id:'sb7',title:'sleep on it. seriously. just do it.',content:'instant gratification is great and all but isn\'t gonna be sustainable, start planning a little more thoroughly, don\'t get stagnant though.',sort_order:7}
+    ];
+    const S_TILES=[
+      {id:'st1',title:'System',content:'<p>D.E.\'s: Cosmic and i3 till im happy with the i3 config things to fix in i3:</p><p>- some apps not working properly or as expected</p><p>ex. - mission control opens to blank/translucent window</p><p>- garuda toolbox can\'t run certain diags or sys update</p><p>general: lockscreen needs theme still</p>',published:true,sort_order:1},
+      {id:'st2',title:'Lessons',content:'<p>- Onward from ch3 at last! got to ch5 l2</p>',published:true,sort_order:2},
+      {id:'st3',title:'This Site',content:'<p>- tweak "hero"</p>',published:true,sort_order:3},
+      {id:'st4',title:'Keybindings Cheatsheet / Editor',content:'<p>undecided where i want to go with it rn, seems to be functioning as expected.</p><p>gonna try to learn how exactly it works before going too much farther.</p>',published:true,sort_order:4}
+    ];
+    const S_PROJECTS=[
+      {id:'sp1',title:'i3 Keybinding Cheatsheet & Editor',tags:'Python, Web UI, i3wm',description:'My first repo. Parses an i3 config file and serves a local web UI for viewing and editing keybindings. Nothing huge, almost kinda embarrassing, but it felt good to put something real out on the internet. And I learned a ton building it.',link_url:'https://github.com/Malys-Botware/i3-keybindings-cheatsheet',link_text:'view on github \u2192',sort_order:1},
+      {id:'sp2',title:'This Website',tags:'HTML, CSS, JS, Supabase',description:'A single-file personal site built to be readable, learnable, and easy to modify. No frameworks. No build steps. Just a text editor and a browser. An ongoing project to learn web development while having something to show for it.',link_url:'https://github.com/Malys-Botware/Malys-Botware.github.io',link_text:'view source \u2192',sort_order:2}
+    ];
+    const S_SOCIALS=[
+      {id:'ss1',name:'GitHub',handle:'Malys-Botware',url:'https://github.com/Malys-Botware',icon_key:'github',sort_order:1},
+      {id:'ss2',name:'X',handle:'@Malys520572',url:'https://x.com/Malys520572',icon_key:'x',sort_order:2},
+      {id:'ss3',name:'Reddit',handle:'u/Electrical_Funny6177',url:'https://reddit.com/u/Electrical_Funny6177',icon_key:'reddit',sort_order:3}
+    ];
+    const S_ENTRIES=[
+      {id:'se3',entry_date:'March 14, 2026',title:'lesson day',content:'<p>how many lessons can you get through? be sure to use potions if you have the gems! don\'t forget about the other usefull tools at your disposal like embers, potions, quests and more!</p><p>talk to boots if needed! he can be rather helpful if you talk through your problem with him!</p><p>go back and review your previous couple lessons or maybe even chapters! especially if you had an extended session previously</p>',published:true},
+      {id:'se2',entry_date:'March 13, 2026',title:'veg day',content:'<p>just a day to sit back and breath. lay back, get comfy and poke around in the tools you\'re learning or go browse some youtube / twitch / whatever tickles your fancy. or maybe you\'ve been putting off a project around the house, gaming? nows the day</p><p>what i got up to today: explored github some more. all commits updating the site today done from github, without AI. just the keyboard and a little mouse action here and there thought about getting back into boot.dev but just need to let my brain settle. watched some youtube. answered a q wrong on x shoulda been pwd - print working directory shows absolute path ended up doing a couple/few lessons</p><p>fairly light easy day, weather coulda beem nicer, plans for tomorrow? hmm.</p>',published:true},
+      {id:'se1',entry_date:'March 12, 2026',title:'the post that started this',content:'<p>I wrote a long post on r/learnprogramming. Put real thought into it \u2014 where I\'m at, what I\'m struggling with, honest questions about balancing learning with building, time management, and how an introvert starts connecting with other people in tech. The mods removed it before anyone could even read it.</p><p>And you know what? No ill will. The sub has rules and I probably should\'ve read the FAQ more carefully. But it did help me realize something: I need my own space. Somewhere my thoughts can exist without getting caught in someone else\'s filter.</p><p>So here we are. This site is that space. It started as frustration but turned into something I\'m actually excited about. Just writing that reddit post \u2014 even though nobody saw it \u2014 helped me organize my thoughts. Turns out writing things down is weirdly therapeutic. Who knew.</p><p>I\'m about a month into learning to code. Started by installing linux on an old alienware laptop. Put my first repo on github yesterday \u2014 an i3 keybinding cheatsheet and editor. It\'s small but it\'s real and it\'s mine. Every new thing I learn opens another door and then I\'m down the next rabbithole. Can\'t stop won\'t stop... until I crash. Then repeat.</p><p>I know I need to slow down. I know I rely on AI too much. I know I should talk to actual humans more. I\'m working on all of it. But at least now I have somewhere to write about the process while I figure it out.</p><p>Gonna keep on keepin\' on, I suppose.</p>',published:true}
+    ];
+
+    /* HELPERS */
+    function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+    function escA(s){return s.replace(/'/g,"\\'").replace(/"/g,'&quot;')}
+    function textToHtml(t){return t.split(/\n\n+/).map(function(p){return'<p>'+esc(p.trim())+'</p>';}).join('')}
+    function renderContent(c){return c.trim().startsWith('<')?c:textToHtml(c)}
+    function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('visible');setTimeout(function(){t.classList.remove('visible')},2500)}
+    function openModal(id){document.getElementById(id).classList.add('visible')}
+    function closeModal(id){document.getElementById(id).classList.remove('visible');var e=document.getElementById(id).querySelector('.error-msg');if(e)e.classList.remove('visible')}
+    function showErr(id,msg){var e=document.getElementById(id);e.textContent=msg;e.classList.add('visible')}
+    async function db(table){return supabaseClient.from(table)}
 
     /* AUTH */
-    function openLogin() {
-      if (!isSupabaseConfigured) { showToast('Supabase not configured yet \u2014 see SETUP_GUIDE.md'); return; }
-      document.getElementById('loginModal').classList.add('visible');
-      document.getElementById('loginEmail').focus();
+    function openLogin(){if(!isSupabaseConfigured){showToast('Supabase not configured \u2014 see SETUP_GUIDE.md');return}openModal('loginModal');document.getElementById('loginEmail').focus()}
+    async function handleLogin(){
+      var email=document.getElementById('loginEmail').value.trim(),pw=document.getElementById('loginPassword').value;
+      if(!email||!pw){showErr('loginError','Email and password required.');return}
+      try{var r=await supabaseClient.auth.signInWithPassword({email:email,password:pw});if(r.error)throw r.error;currentUser=r.data.user;closeModal('loginModal');document.getElementById('loginEmail').value='';document.getElementById('loginPassword').value='';updateUI();loadAll();showToast('Logged in')}
+      catch(e){showErr('loginError',e.message||'Login failed.')}
     }
-    function closeLogin() { document.getElementById('loginModal').classList.remove('visible'); document.getElementById('loginError').classList.remove('visible'); document.getElementById('loginEmail').value = ''; document.getElementById('loginPassword').value = ''; }
-    async function handleLogin() {
-      var email = document.getElementById('loginEmail').value.trim(), password = document.getElementById('loginPassword').value, err = document.getElementById('loginError');
-      if (!email || !password) { err.textContent = 'Email and password required.'; err.classList.add('visible'); return; }
-      try { var r = await supabaseClient.auth.signInWithPassword({email,password}); if(r.error) throw r.error; currentUser = r.data.user; closeLogin(); updateAdminUI(); loadDashboardTiles(); loadJournalEntries(); showToast('Logged in'); }
-      catch(e) { err.textContent = e.message||'Login failed.'; err.classList.add('visible'); }
-    }
-    async function handleLogout() { if(!supabaseClient) return; await supabaseClient.auth.signOut(); currentUser=null; updateAdminUI(); loadDashboardTiles(); loadJournalEntries(); showToast('Logged out'); }
-    async function checkSession() { if(!supabaseClient) return; try { var s = await supabaseClient.auth.getSession(); if(s.data.session) { currentUser=s.data.session.user; updateAdminUI(); } } catch(e){} }
-    function updateAdminUI() {
-      var dt=document.getElementById('dashboardToolbar'), jt=document.getElementById('journalToolbar'), li=document.getElementById('adminLoginLink'), lo=document.getElementById('adminLogoutLink');
-      if(currentUser) { dt.classList.add('visible'); jt.classList.add('visible'); li.style.display='none'; lo.style.display='inline-flex'; }
-      else { dt.classList.remove('visible'); jt.classList.remove('visible'); li.style.display='inline-flex'; lo.style.display='none'; }
-    }
-    document.getElementById('loginPassword').addEventListener('keydown', function(e) { if(e.key==='Enter') handleLogin(); });
+    async function handleLogout(){if(!supabaseClient)return;await supabaseClient.auth.signOut();currentUser=null;updateUI();loadAll();showToast('Logged out')}
+    async function checkSession(){if(!supabaseClient)return;try{var s=await supabaseClient.auth.getSession();if(s.data.session){currentUser=s.data.session.user;updateUI()}}catch(e){}}
+    document.getElementById('loginPassword').addEventListener('keydown',function(e){if(e.key==='Enter')handleLogin()});
 
-    /* DASHBOARD: LOAD & RENDER */
-    async function loadDashboardTiles() {
-      var c = document.getElementById('dashboardTiles');
-      if(!supabaseClient) { renderTiles(STATIC_TILES); return; }
-      c.innerHTML = '<div class="section-loading">loading dashboard...</div>';
-      try {
-        var query = supabaseClient.from('dashboard_tiles').select('*').order('sort_order',{ascending:true});
-        if(!currentUser) query = query.eq('published', true);
-        var r = await query; if(r.error) throw r.error;
-        if(!r.data||r.data.length===0) { c.innerHTML='<p style="color:var(--white-dim);font-size:0.85rem;">no tiles yet.</p>'; return; }
-        renderTiles(r.data);
-      } catch(e) { console.error('Dashboard load failed:',e); renderTiles(STATIC_TILES); }
+    function updateUI(){
+      var admin=!!currentUser;
+      ['dashboardToolbar','journalToolbar','beliefsToolbar','projectsToolbar','socialToolbar'].forEach(function(id){document.getElementById(id).classList.toggle('visible',admin)});
+      document.getElementById('editAboutBtn').classList.toggle('visible',admin);
+      document.getElementById('adminLoginLink').style.display=admin?'none':'inline-flex';
+      document.getElementById('adminLogoutLink').style.display=admin?'inline-flex':'none';
     }
-    function renderTiles(tiles) {
-      var c = document.getElementById('dashboardTiles'); c.innerHTML = '';
-      tiles.forEach(function(tile) {
-        var card = document.createElement('div'); card.className = 'now-card reveal visible';
-        var badge = (!tile.published && currentUser) ? '<span class="draft-badge">draft</span>' : '';
-        var controls = currentUser ? '<div class="tile-controls visible"><button class="btn btn-small '+(tile.published?'':'btn-green')+'" onclick="toggleTilePublish(\''+tile.id+'\','+!tile.published+')">'+(tile.published?'unpublish':'publish')+'</button><button class="btn btn-small" onclick="openTileEditor(\''+tile.id+'\')">edit</button><button class="btn btn-small btn-danger" onclick="deleteTile(\''+tile.id+'\')">delete</button></div>' : '';
-        card.innerHTML = '<h3>'+escapeHtml(tile.title)+badge+'</h3><div class="rich-content">'+renderContent(tile.content)+'</div>'+controls;
-        c.appendChild(card);
+
+    /* SITE SETTINGS (hero, about, footer) */
+    var siteSettings={...S_SETTINGS};
+    async function loadSettings(){
+      if(!supabaseClient){renderSettings();return}
+      try{var r=await supabaseClient.from('site_settings').select('*');if(r.error)throw r.error;if(r.data)r.data.forEach(function(row){siteSettings[row.key]=row.value});renderSettings()}
+      catch(e){renderSettings()}
+    }
+    function renderSettings(){
+      var h=document.getElementById('heroContent');
+      var editBtn=currentUser?'<button class="admin-btn-inline visible" onclick="openHeroEditor()">edit</button>':'';
+      h.innerHTML='<h1>hey, i\'m <span class="red">'+esc(siteSettings.hero_name)+'</span>'+editBtn+'</h1><p class="tagline">'+esc(siteSettings.hero_tagline)+'</p><span class="status">'+esc(siteSettings.hero_status)+'</span>';
+      var a=document.getElementById('aboutIntro');
+      a.innerHTML=textToHtml(siteSettings.about_intro);
+      var f=document.getElementById('footerContent');
+      var fBtn=currentUser?'<button class="admin-btn-inline visible" onclick="openFooterEditor()" style="margin-left:0;margin-top:8px">edit</button>':'';
+      f.innerHTML='<p>'+esc(siteSettings.footer_line1)+'</p><p style="margin-top:4px">'+esc(siteSettings.footer_line2)+'</p>'+fBtn;
+    }
+    async function saveSetting(key,val){
+      if(!supabaseClient)return;
+      var r=await supabaseClient.from('site_settings').upsert({key:key,value:val,user_id:currentUser.id},{onConflict:'key'});
+      if(r.error)throw r.error;
+      siteSettings[key]=val;
+    }
+    function openHeroEditor(){document.getElementById('heroName').value=siteSettings.hero_name;document.getElementById('heroTagline').value=siteSettings.hero_tagline;document.getElementById('heroStatus').value=siteSettings.hero_status;openModal('heroEditorModal')}
+    async function saveHero(){
+      try{await saveSetting('hero_name',document.getElementById('heroName').value.trim());await saveSetting('hero_tagline',document.getElementById('heroTagline').value.trim());await saveSetting('hero_status',document.getElementById('heroStatus').value.trim());closeModal('heroEditorModal');renderSettings();showToast('Hero updated')}
+      catch(e){showErr('heroEditorError',e.message||'Failed to save')}
+    }
+    function openAboutEditor(){document.getElementById('aboutIntroText').value=siteSettings.about_intro;openModal('aboutEditorModal')}
+    async function saveAbout(){
+      try{await saveSetting('about_intro',document.getElementById('aboutIntroText').value.trim());closeModal('aboutEditorModal');renderSettings();showToast('About updated')}
+      catch(e){showErr('aboutEditorError',e.message||'Failed to save')}
+    }
+    function openFooterEditor(){document.getElementById('footerLine1').value=siteSettings.footer_line1;document.getElementById('footerLine2').value=siteSettings.footer_line2;openModal('footerEditorModal')}
+    async function saveFooter(){
+      try{await saveSetting('footer_line1',document.getElementById('footerLine1').value.trim());await saveSetting('footer_line2',document.getElementById('footerLine2').value.trim());closeModal('footerEditorModal');renderSettings();showToast('Footer updated')}
+      catch(e){showErr('footerEditorError',e.message||'Failed to save')}
+    }
+
+    /* BELIEFS */
+    async function loadBeliefs(){
+      var c=document.getElementById('beliefsList');
+      if(!supabaseClient){renderBeliefs(S_BELIEFS);return}
+      try{var r=await supabaseClient.from('beliefs').select('*').order('sort_order',{ascending:true});if(r.error)throw r.error;renderBeliefs(r.data&&r.data.length?r.data:[])}
+      catch(e){renderBeliefs(S_BELIEFS)}
+    }
+    function renderBeliefs(items){
+      var c=document.getElementById('beliefsList');c.innerHTML='';
+      items.forEach(function(b){
+        var d=document.createElement('div');d.className='belief reveal visible';
+        var ctrls=currentUser?'<div class="item-controls visible"><button class="btn btn-small" onclick="openBeliefEditor(\''+b.id+'\')">edit</button><button class="btn btn-small btn-danger" onclick="deleteBelief(\''+b.id+'\')">delete</button></div>':'';
+        d.innerHTML='<h3>'+esc(b.title)+'</h3><p>'+esc(b.content)+'</p>'+ctrls;
+        c.appendChild(d);
       });
     }
+    function openBeliefEditor(id){
+      editingId=id||null;editingType='belief';
+      document.getElementById('beliefEditorTitle').textContent=id?'Edit Belief':'New Belief';
+      document.getElementById('beliefEditorSaveBtn').textContent=id?'Save Changes':'Save';
+      if(id){loadItemForEditing('beliefs',id,function(d){document.getElementById('beliefTitle').value=d.title;document.getElementById('beliefContent').value=d.content})}
+      else{document.getElementById('beliefTitle').value='';document.getElementById('beliefContent').value=''}
+      openModal('beliefEditorModal');document.getElementById('beliefTitle').focus();
+    }
+    async function saveBelief(){
+      var title=document.getElementById('beliefTitle').value.trim(),content=document.getElementById('beliefContent').value.trim();
+      if(!title||!content){showErr('beliefEditorError','Title and description required.');return}
+      try{
+        if(editingId){var r=await supabaseClient.from('beliefs').update({title:title,content:content}).eq('id',editingId);if(r.error)throw r.error;showToast('Belief updated')}
+        else{var ex=await supabaseClient.from('beliefs').select('sort_order').order('sort_order',{ascending:false}).limit(1);var n=(ex.data&&ex.data.length)?ex.data[0].sort_order+1:1;var r=await supabaseClient.from('beliefs').insert({title:title,content:content,sort_order:n,user_id:currentUser.id});if(r.error)throw r.error;showToast('Belief added')}
+        closeModal('beliefEditorModal');loadBeliefs();
+      }catch(e){showErr('beliefEditorError',e.message||'Failed to save')}
+    }
+    async function deleteBelief(id){if(!confirm('Delete this belief?'))return;try{var r=await supabaseClient.from('beliefs').delete().eq('id',id);if(r.error)throw r.error;showToast('Deleted');loadBeliefs()}catch(e){showToast('Failed')}}
 
-    /* DASHBOARD: CREATE & EDIT */
-    function openTileEditor(tileId) {
-      editingTileId = tileId||null;
-      var t=document.getElementById('tileEditorTitle'), b=document.getElementById('tileEditorSaveBtn');
-      if(editingTileId) { t.textContent='Edit Tile'; b.textContent='Save Changes'; loadTileForEditing(editingTileId); }
-      else { t.textContent='New Tile'; b.textContent='Save Draft'; document.getElementById('tileTitle').value=''; tileQuill.root.innerHTML=''; }
-      document.getElementById('tileEditorModal').classList.add('visible');
-      document.getElementById('tileTitle').focus();
+    /* DASHBOARD TILES */
+    async function loadTiles(){
+      var c=document.getElementById('dashboardTiles');
+      if(!supabaseClient){renderTiles(S_TILES);return}
+      c.innerHTML='<div class="section-loading">loading...</div>';
+      try{var q=supabaseClient.from('dashboard_tiles').select('*').order('sort_order',{ascending:true});if(!currentUser)q=q.eq('published',true);var r=await q;if(r.error)throw r.error;renderTiles(r.data&&r.data.length?r.data:[])}
+      catch(e){renderTiles(S_TILES)}
     }
-    async function loadTileForEditing(id) {
-      try { var r = await supabaseClient.from('dashboard_tiles').select('*').eq('id',id).single(); if(r.error) throw r.error; document.getElementById('tileTitle').value=r.data.title; tileQuill.root.innerHTML=renderContent(r.data.content); }
-      catch(e) { showToast('Failed to load tile'); closeTileEditor(); }
+    function renderTiles(tiles){
+      var c=document.getElementById('dashboardTiles');c.innerHTML='';
+      if(!tiles.length){c.innerHTML='<p style="color:var(--white-dim);font-size:0.85rem">no tiles yet.</p>';return}
+      tiles.forEach(function(t){
+        var d=document.createElement('div');d.className='now-card reveal visible';
+        var badge=(!t.published&&currentUser)?'<span class="draft-badge">draft</span>':'';
+        var ctrls=currentUser?'<div class="item-controls visible"><button class="btn btn-small '+(t.published?'':'btn-green')+'" onclick="toggleTilePub(\''+t.id+'\','+!t.published+')">'+(t.published?'unpublish':'publish')+'</button><button class="btn btn-small" onclick="openTileEditor(\''+t.id+'\')">edit</button><button class="btn btn-small btn-danger" onclick="deleteTile(\''+t.id+'\')">delete</button></div>':'';
+        d.innerHTML='<h3>'+esc(t.title)+badge+'</h3><div class="rich-content">'+renderContent(t.content)+'</div>'+ctrls;
+        c.appendChild(d);
+      });
     }
-    function closeTileEditor() { document.getElementById('tileEditorModal').classList.remove('visible'); document.getElementById('tileEditorError').classList.remove('visible'); editingTileId=null; }
-    async function saveTile() {
-      var title=document.getElementById('tileTitle').value.trim(), content=tileQuill.root.innerHTML.trim(), err=document.getElementById('tileEditorError');
-      if(!title||!content||content==='<p><br></p>') { err.textContent='Title and content are required.'; err.classList.add('visible'); return; }
-      try {
-        if(editingTileId) { var r=await supabaseClient.from('dashboard_tiles').update({title,content,updated_at:new Date().toISOString()}).eq('id',editingTileId); if(r.error) throw r.error; showToast('Tile updated'); }
-        else { var ex=await supabaseClient.from('dashboard_tiles').select('sort_order').order('sort_order',{ascending:false}).limit(1); var next=(ex.data&&ex.data.length>0)?ex.data[0].sort_order+1:1; var r=await supabaseClient.from('dashboard_tiles').insert({title,content,sort_order:next,published:false,user_id:currentUser.id}); if(r.error) throw r.error; showToast('Draft saved'); }
-        closeTileEditor(); loadDashboardTiles();
-      } catch(e) { err.textContent=e.message||'Failed to save.'; err.classList.add('visible'); }
+    function openTileEditor(id){
+      editingId=id||null;editingType='tile';
+      document.getElementById('tileEditorTitle').textContent=id?'Edit Tile':'New Tile';
+      document.getElementById('tileEditorSaveBtn').textContent=id?'Save Changes':'Save Draft';
+      if(id){loadItemForEditing('dashboard_tiles',id,function(d){document.getElementById('tileTitle').value=d.title;tileQuill.root.innerHTML=renderContent(d.content)})}
+      else{document.getElementById('tileTitle').value='';tileQuill.root.innerHTML=''}
+      openModal('tileEditorModal');document.getElementById('tileTitle').focus();
     }
-    async function toggleTilePublish(id, state) { try { var r=await supabaseClient.from('dashboard_tiles').update({published:state,updated_at:new Date().toISOString()}).eq('id',id); if(r.error) throw r.error; showToast(state?'Published':'Unpublished'); loadDashboardTiles(); } catch(e) { showToast('Failed to update'); } }
-    async function deleteTile(id) { if(!confirm('Delete this tile?')) return; try { var r=await supabaseClient.from('dashboard_tiles').delete().eq('id',id); if(r.error) throw r.error; showToast('Tile deleted'); loadDashboardTiles(); } catch(e) { showToast('Failed to delete'); } }
+    async function saveTile(){
+      var title=document.getElementById('tileTitle').value.trim(),content=tileQuill.root.innerHTML.trim();
+      if(!title||!content||content==='<p><br></p>'){showErr('tileEditorError','Title and content required.');return}
+      try{
+        if(editingId){var r=await supabaseClient.from('dashboard_tiles').update({title:title,content:content,updated_at:new Date().toISOString()}).eq('id',editingId);if(r.error)throw r.error;showToast('Tile updated')}
+        else{var ex=await supabaseClient.from('dashboard_tiles').select('sort_order').order('sort_order',{ascending:false}).limit(1);var n=(ex.data&&ex.data.length)?ex.data[0].sort_order+1:1;var r=await supabaseClient.from('dashboard_tiles').insert({title:title,content:content,sort_order:n,published:false,user_id:currentUser.id});if(r.error)throw r.error;showToast('Draft saved')}
+        closeModal('tileEditorModal');loadTiles();
+      }catch(e){showErr('tileEditorError',e.message||'Failed to save')}
+    }
+    async function toggleTilePub(id,s){try{var r=await supabaseClient.from('dashboard_tiles').update({published:s}).eq('id',id);if(r.error)throw r.error;showToast(s?'Published':'Unpublished');loadTiles()}catch(e){showToast('Failed')}}
+    async function deleteTile(id){if(!confirm('Delete this tile?'))return;try{var r=await supabaseClient.from('dashboard_tiles').delete().eq('id',id);if(r.error)throw r.error;showToast('Deleted');loadTiles()}catch(e){showToast('Failed')}}
 
-    /* JOURNAL: LOAD & RENDER */
-    async function loadJournalEntries() {
-      var c = document.getElementById('journalEntries');
-      if(!supabaseClient) { renderEntries(STATIC_ENTRIES); return; }
-      c.innerHTML = '<div class="section-loading">loading journal...</div>';
-      try {
-        var query = supabaseClient.from('journal_entries').select('*').order('created_at',{ascending:false});
-        if(!currentUser) query = query.eq('published', true);
-        var r = await query; if(r.error) throw r.error;
-        if(!r.data||r.data.length===0) { c.innerHTML='<p style="color:var(--white-dim);font-size:0.85rem;">no entries yet.</p>'; return; }
-        renderEntries(r.data);
-      } catch(e) { console.error('Journal load failed:',e); renderEntries(STATIC_ENTRIES); }
+    /* PROJECTS */
+    async function loadProjects(){
+      var c=document.getElementById('projectsList');
+      if(!supabaseClient){renderProjects(S_PROJECTS);return}
+      try{var r=await supabaseClient.from('projects').select('*').order('sort_order',{ascending:true});if(r.error)throw r.error;renderProjects(r.data&&r.data.length?r.data:[])}
+      catch(e){renderProjects(S_PROJECTS)}
     }
-    function renderEntries(entries) {
-      var c = document.getElementById('journalEntries'); c.innerHTML = '';
-      entries.forEach(function(entry) {
-        var a = document.createElement('article'); a.className = 'journal-entry reveal visible';
-        var badge = (!entry.published&&currentUser) ? '<span class="draft-badge">draft</span>' : '';
-        var controls = currentUser ? '<div class="entry-controls visible"><button class="btn btn-small '+(entry.published?'':'btn-green')+'" onclick="toggleEntryPublish(\''+entry.id+'\','+!entry.published+')">'+(entry.published?'unpublish':'publish')+'</button><button class="btn btn-small" onclick="openEntryEditor(\''+entry.id+'\')">edit</button><button class="btn btn-small btn-danger" onclick="deleteEntry(\''+entry.id+'\')">delete</button><span class="control-spacer"></span><div class="share-group"><span class="share-label">share:</span><button class="btn btn-small" onclick="shareToX(\''+escapeAttr(entry.title)+'\')">X</button><button class="btn btn-small" onclick="shareToReddit(\''+escapeAttr(entry.title)+'\')">Reddit</button><button class="btn btn-small" onclick="copyEntryLink()">Link</button></div></div>' : '';
-        a.innerHTML = '<div class="entry-date">'+escapeHtml(entry.entry_date)+badge+'</div><h3>'+escapeHtml(entry.title)+'</h3><div class="rich-content">'+renderContent(entry.content)+'</div>'+controls;
+    function renderProjects(items){
+      var c=document.getElementById('projectsList');c.innerHTML='';
+      items.forEach(function(p){
+        var d=document.createElement('div');d.className='project-card reveal visible';
+        var tags=p.tags.split(',').map(function(t){return'<span class="tag">'+esc(t.trim())+'</span>'}).join('');
+        var ctrls=currentUser?'<div class="item-controls visible" style="margin-top:var(--space-md)"><button class="btn btn-small" onclick="openProjectEditor(\''+p.id+'\')">edit</button><button class="btn btn-small btn-danger" onclick="deleteProject(\''+p.id+'\')">delete</button></div>':'';
+        d.innerHTML='<div class="project-header"><h3>'+esc(p.title)+'</h3><div class="project-tags">'+tags+'</div></div><p>'+esc(p.description)+'</p><a href="'+esc(p.link_url)+'" class="project-link" target="_blank" rel="noopener">'+esc(p.link_text)+'</a>'+ctrls;
+        c.appendChild(d);
+      });
+    }
+    function openProjectEditor(id){
+      editingId=id||null;editingType='project';
+      document.getElementById('projectEditorTitle').textContent=id?'Edit Project':'New Project';
+      document.getElementById('projectEditorSaveBtn').textContent=id?'Save Changes':'Save';
+      if(id){loadItemForEditing('projects',id,function(d){document.getElementById('projectTitle').value=d.title;document.getElementById('projectTags').value=d.tags;document.getElementById('projectDesc').value=d.description;document.getElementById('projectUrl').value=d.link_url;document.getElementById('projectLinkText').value=d.link_text})}
+      else{document.getElementById('projectTitle').value='';document.getElementById('projectTags').value='';document.getElementById('projectDesc').value='';document.getElementById('projectUrl').value='';document.getElementById('projectLinkText').value='view on github \u2192'}
+      openModal('projectEditorModal');document.getElementById('projectTitle').focus();
+    }
+    async function saveProject(){
+      var title=document.getElementById('projectTitle').value.trim(),tags=document.getElementById('projectTags').value.trim(),desc=document.getElementById('projectDesc').value.trim(),url=document.getElementById('projectUrl').value.trim(),lt=document.getElementById('projectLinkText').value.trim();
+      if(!title||!desc){showErr('projectEditorError','Title and description required.');return}
+      try{
+        if(editingId){var r=await supabaseClient.from('projects').update({title:title,tags:tags,description:desc,link_url:url,link_text:lt}).eq('id',editingId);if(r.error)throw r.error;showToast('Project updated')}
+        else{var ex=await supabaseClient.from('projects').select('sort_order').order('sort_order',{ascending:false}).limit(1);var n=(ex.data&&ex.data.length)?ex.data[0].sort_order+1:1;var r=await supabaseClient.from('projects').insert({title:title,tags:tags,description:desc,link_url:url,link_text:lt,sort_order:n,user_id:currentUser.id});if(r.error)throw r.error;showToast('Project added')}
+        closeModal('projectEditorModal');loadProjects();
+      }catch(e){showErr('projectEditorError',e.message||'Failed to save')}
+    }
+    async function deleteProject(id){if(!confirm('Delete this project?'))return;try{var r=await supabaseClient.from('projects').delete().eq('id',id);if(r.error)throw r.error;showToast('Deleted');loadProjects()}catch(e){showToast('Failed')}}
+
+    /* JOURNAL ENTRIES */
+    async function loadEntries(){
+      var c=document.getElementById('journalEntries');
+      if(!supabaseClient){renderEntries(S_ENTRIES);return}
+      c.innerHTML='<div class="section-loading">loading...</div>';
+      try{var q=supabaseClient.from('journal_entries').select('*').order('created_at',{ascending:false});if(!currentUser)q=q.eq('published',true);var r=await q;if(r.error)throw r.error;renderEntries(r.data&&r.data.length?r.data:[])}
+      catch(e){renderEntries(S_ENTRIES)}
+    }
+    function renderEntries(entries){
+      var c=document.getElementById('journalEntries');c.innerHTML='';
+      if(!entries.length){c.innerHTML='<p style="color:var(--white-dim);font-size:0.85rem">no entries yet.</p>';return}
+      entries.forEach(function(e){
+        var a=document.createElement('article');a.className='journal-entry reveal visible';
+        var badge=(!e.published&&currentUser)?'<span class="draft-badge">draft</span>':'';
+        var ctrls=currentUser?'<div class="entry-controls visible"><button class="btn btn-small '+(e.published?'':'btn-green')+'" onclick="toggleEntryPub(\''+e.id+'\','+!e.published+')">'+(e.published?'unpublish':'publish')+'</button><button class="btn btn-small" onclick="openEntryEditor(\''+e.id+'\')">edit</button><button class="btn btn-small btn-danger" onclick="deleteEntry(\''+e.id+'\')">delete</button><span class="control-spacer"></span><div class="share-group"><span class="share-label">share:</span><button class="btn btn-small" onclick="shareToX(\''+escA(e.title)+'\')">X</button><button class="btn btn-small" onclick="shareToReddit(\''+escA(e.title)+'\')">Reddit</button><button class="btn btn-small" onclick="copyLink()">Link</button></div></div>':'';
+        a.innerHTML='<div class="entry-date">'+esc(e.entry_date)+badge+'</div><h3>'+esc(e.title)+'</h3><div class="rich-content">'+renderContent(e.content)+'</div>'+ctrls;
         c.appendChild(a);
       });
     }
+    function openEntryEditor(id){
+      editingId=id||null;editingType='entry';
+      document.getElementById('entryEditorTitle').textContent=id?'Edit Entry':'New Entry';
+      document.getElementById('entryEditorSaveBtn').textContent=id?'Save Changes':'Save Draft';
+      if(id){loadItemForEditing('journal_entries',id,function(d){document.getElementById('entryTitle').value=d.title;document.getElementById('entryDate').value=d.entry_date;entryQuill.root.innerHTML=renderContent(d.content)})}
+      else{document.getElementById('entryTitle').value='';document.getElementById('entryDate').value=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});entryQuill.root.innerHTML=''}
+      openModal('entryEditorModal');document.getElementById('entryTitle').focus();
+    }
+    async function saveEntry(){
+      var title=document.getElementById('entryTitle').value.trim(),date=document.getElementById('entryDate').value.trim(),content=entryQuill.root.innerHTML.trim();
+      if(!title||!date||!content||content==='<p><br></p>'){showErr('entryEditorError','All fields required.');return}
+      try{
+        if(editingId){var r=await supabaseClient.from('journal_entries').update({title:title,entry_date:date,content:content,updated_at:new Date().toISOString()}).eq('id',editingId);if(r.error)throw r.error;showToast('Entry updated')}
+        else{var r=await supabaseClient.from('journal_entries').insert({title:title,entry_date:date,content:content,published:false,user_id:currentUser.id});if(r.error)throw r.error;showToast('Draft saved')}
+        closeModal('entryEditorModal');loadEntries();
+      }catch(e){showErr('entryEditorError',e.message||'Failed to save')}
+    }
+    async function toggleEntryPub(id,s){try{var r=await supabaseClient.from('journal_entries').update({published:s,updated_at:new Date().toISOString()}).eq('id',id);if(r.error)throw r.error;showToast(s?'Published':'Unpublished');loadEntries()}catch(e){showToast('Failed')}}
+    async function deleteEntry(id){if(!confirm('Delete this entry?'))return;try{var r=await supabaseClient.from('journal_entries').delete().eq('id',id);if(r.error)throw r.error;showToast('Deleted');loadEntries()}catch(e){showToast('Failed')}}
 
-    /* JOURNAL: CREATE & EDIT */
-    function openEntryEditor(entryId) {
-      editingEntryId = entryId||null;
-      var t=document.getElementById('entryEditorTitle'), b=document.getElementById('entryEditorSaveBtn');
-      if(editingEntryId) { t.textContent='Edit Entry'; b.textContent='Save Changes'; loadEntryForEditing(editingEntryId); }
-      else { t.textContent='New Entry'; b.textContent='Save Draft'; document.getElementById('entryTitle').value=''; document.getElementById('entryDate').value=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}); entryQuill.root.innerHTML=''; }
-      document.getElementById('entryEditorModal').classList.add('visible');
-      document.getElementById('entryTitle').focus();
+    /* SOCIAL LINKS */
+    async function loadSocials(){
+      if(!supabaseClient){renderSocials(S_SOCIALS);return}
+      try{var r=await supabaseClient.from('social_links').select('*').order('sort_order',{ascending:true});if(r.error)throw r.error;renderSocials(r.data&&r.data.length?r.data:[])}
+      catch(e){renderSocials(S_SOCIALS)}
     }
-    async function loadEntryForEditing(id) {
-      try { var r=await supabaseClient.from('journal_entries').select('*').eq('id',id).single(); if(r.error) throw r.error; document.getElementById('entryTitle').value=r.data.title; document.getElementById('entryDate').value=r.data.entry_date; entryQuill.root.innerHTML=renderContent(r.data.content); }
-      catch(e) { showToast('Failed to load entry'); closeEntryEditor(); }
+    function renderSocials(items){
+      var c=document.getElementById('socialLinksList');c.innerHTML='';
+      items.forEach(function(s){
+        var d=document.createElement('a');d.href=s.url;d.className='social-link reveal visible';d.target='_blank';d.rel='noopener';
+        var ctrls=currentUser?'<div class="item-controls visible" style="width:100%;margin-top:var(--space-sm);border-top:1px solid var(--gray);padding-top:var(--space-sm)"><button class="btn btn-small" onclick="event.preventDefault();openSocialEditor(\''+s.id+'\')">edit</button><button class="btn btn-small btn-danger" onclick="event.preventDefault();deleteSocial(\''+s.id+'\')">delete</button></div>':'';
+        d.innerHTML='<div class="social-icon">'+iconSvg(s.icon_key)+'</div><div class="social-info"><div class="social-name">'+esc(s.name)+'</div><div class="social-handle">'+esc(s.handle)+'</div></div><span class="social-arrow">\u2192</span>'+ctrls;
+        c.appendChild(d);
+      });
     }
-    function closeEntryEditor() { document.getElementById('entryEditorModal').classList.remove('visible'); document.getElementById('entryEditorError').classList.remove('visible'); editingEntryId=null; }
-    async function saveEntry() {
-      var title=document.getElementById('entryTitle').value.trim(), date=document.getElementById('entryDate').value.trim(), content=entryQuill.root.innerHTML.trim(), err=document.getElementById('entryEditorError');
-      if(!title||!date||!content||content==='<p><br></p>') { err.textContent='All fields are required.'; err.classList.add('visible'); return; }
-      try {
-        if(editingEntryId) { var r=await supabaseClient.from('journal_entries').update({title,entry_date:date,content,updated_at:new Date().toISOString()}).eq('id',editingEntryId); if(r.error) throw r.error; showToast('Entry updated'); }
-        else { var r=await supabaseClient.from('journal_entries').insert({title,entry_date:date,content,published:false,user_id:currentUser.id}); if(r.error) throw r.error; showToast('Draft saved'); }
-        closeEntryEditor(); loadJournalEntries();
-      } catch(e) { err.textContent=e.message||'Failed to save.'; err.classList.add('visible'); }
+    function openSocialEditor(id){
+      editingId=id||null;editingType='social';
+      document.getElementById('socialEditorTitle').textContent=id?'Edit Social Link':'New Social Link';
+      document.getElementById('socialEditorSaveBtn').textContent=id?'Save Changes':'Save';
+      if(id){loadItemForEditing('social_links',id,function(d){document.getElementById('socialIcon').value=d.icon_key;document.getElementById('socialName').value=d.name;document.getElementById('socialHandle').value=d.handle;document.getElementById('socialUrl').value=d.url})}
+      else{document.getElementById('socialIcon').value='github';document.getElementById('socialName').value='';document.getElementById('socialHandle').value='';document.getElementById('socialUrl').value=''}
+      openModal('socialEditorModal');
     }
-    async function toggleEntryPublish(id, state) { try { var r=await supabaseClient.from('journal_entries').update({published:state,updated_at:new Date().toISOString()}).eq('id',id); if(r.error) throw r.error; showToast(state?'Published':'Unpublished'); loadJournalEntries(); } catch(e) { showToast('Failed to update'); } }
-    async function deleteEntry(id) { if(!confirm('Delete this entry? This cannot be undone.')) return; try { var r=await supabaseClient.from('journal_entries').delete().eq('id',id); if(r.error) throw r.error; showToast('Entry deleted'); loadJournalEntries(); } catch(e) { showToast('Failed to delete'); } }
+    async function saveSocial(){
+      var icon=document.getElementById('socialIcon').value,name=document.getElementById('socialName').value.trim(),handle=document.getElementById('socialHandle').value.trim(),url=document.getElementById('socialUrl').value.trim();
+      if(!name||!url){showErr('socialEditorError','Name and URL required.');return}
+      try{
+        if(editingId){var r=await supabaseClient.from('social_links').update({icon_key:icon,name:name,handle:handle,url:url}).eq('id',editingId);if(r.error)throw r.error;showToast('Link updated')}
+        else{var ex=await supabaseClient.from('social_links').select('sort_order').order('sort_order',{ascending:false}).limit(1);var n=(ex.data&&ex.data.length)?ex.data[0].sort_order+1:1;var r=await supabaseClient.from('social_links').insert({icon_key:icon,name:name,handle:handle,url:url,sort_order:n,user_id:currentUser.id});if(r.error)throw r.error;showToast('Link added')}
+        closeModal('socialEditorModal');loadSocials();
+      }catch(e){showErr('socialEditorError',e.message||'Failed to save')}
+    }
+    async function deleteSocial(id){if(!confirm('Delete this link?'))return;try{var r=await supabaseClient.from('social_links').delete().eq('id',id);if(r.error)throw r.error;showToast('Deleted');loadSocials()}catch(e){showToast('Failed')}}
+
+    /* GENERIC LOAD FOR EDITING */
+    async function loadItemForEditing(table,id,cb){
+      try{var r=await supabaseClient.from(table).select('*').eq('id',id).single();if(r.error)throw r.error;cb(r.data)}
+      catch(e){showToast('Failed to load');closeModal(document.querySelector('.modal-overlay.visible').id)}
+    }
 
     /* SHARE */
-    var SITE_URL = 'https://malys-botware.github.io';
-    function shareToX(title) { window.open('https://x.com/intent/tweet?text='+encodeURIComponent(title+' \u2014 '+SITE_URL+'#journal'),'_blank','noopener,width=550,height=420'); }
-    function shareToReddit(title) { window.open('https://www.reddit.com/submit?url='+encodeURIComponent(SITE_URL+'#journal')+'&title='+encodeURIComponent(title),'_blank','noopener'); }
-    function copyEntryLink() { navigator.clipboard.writeText(SITE_URL+'#journal').then(function(){showToast('Link copied');}).catch(function(){showToast('Could not copy');}); }
+    function shareToX(t){window.open('https://x.com/intent/tweet?text='+encodeURIComponent(t+' \u2014 '+SITE_URL+'#journal'),'_blank','noopener,width=550,height=420')}
+    function shareToReddit(t){window.open('https://www.reddit.com/submit?url='+encodeURIComponent(SITE_URL+'#journal')+'&title='+encodeURIComponent(t),'_blank','noopener')}
+    function copyLink(){navigator.clipboard.writeText(SITE_URL+'#journal').then(function(){showToast('Link copied')}).catch(function(){showToast('Could not copy')})}
 
-    /* HELPERS */
-    function showToast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('visible'); setTimeout(function(){t.classList.remove('visible');},2500); }
-    function escapeHtml(s) { var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-    function escapeAttr(s) { return s.replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+    /* SCROLL REVEAL + NAV */
+    var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.1,rootMargin:'0px 0px -50px 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el)});
+    var secs=document.querySelectorAll('section[id]'),nls=document.querySelectorAll('.nav-links a');
+    window.addEventListener('scroll',function(){var cur='';secs.forEach(function(s){if(window.scrollY>=s.offsetTop-100)cur=s.getAttribute('id')});nls.forEach(function(l){l.classList.remove('active');if(l.getAttribute('href')==='#'+cur)l.classList.add('active')})});
+    document.querySelectorAll('.nav-links a').forEach(function(l){l.addEventListener('click',function(){document.querySelector('.nav-links').classList.remove('open')})});
 
-    /* SCROLL REVEAL + ACTIVE NAV */
-    var observer = new IntersectionObserver(function(entries) { entries.forEach(function(e) { if(e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold:0.1, rootMargin:'0px 0px -50px 0px' });
-    document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
-    var sections = document.querySelectorAll('section[id]'), navLinks = document.querySelectorAll('.nav-links a');
-    window.addEventListener('scroll', function() {
-      var current=''; sections.forEach(function(s) { if(window.scrollY>=s.offsetTop-100) current=s.getAttribute('id'); });
-      navLinks.forEach(function(l) { l.classList.remove('active'); if(l.getAttribute('href')==='#'+current) l.classList.add('active'); });
-    });
-    document.querySelectorAll('.nav-links a').forEach(function(l) { l.addEventListener('click', function() { document.querySelector('.nav-links').classList.remove('open'); }); });
+    /* LOAD ALL */
+    function loadAll(){loadSettings();loadBeliefs();loadTiles();loadProjects();loadEntries();loadSocials()}
 
     /* INIT */
-    (async function() { await checkSession(); await loadDashboardTiles(); await loadJournalEntries(); })();
+    (async function(){await checkSession();loadAll()})();
   </script>
 </body>
 </html>
