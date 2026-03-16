@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solitaire — Malys</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* 
+      ============================================================
+      KLONDIKE SOLITAIRE — DRAW 3
+      ============================================================
+      Complete single-file solitaire with drag-and-drop.
+      No frameworks, no dependencies beyond Google Fonts.
+      
+      Rules (draw-3 Klondike):
+      - 7 tableau columns, column i has i+1 cards, top face-up
+      - Stock draws 3 cards at a time to waste (fanned)
+      - Only the top waste card is playable
+      - Build foundations up by suit: Ace → King
+      - Build tableau down in alternating colors
+      - King fills empty columns
+      - Win when all 52 cards reach the foundations
+      
+      Controls:
+      - Drag cards to move them
+      - Click to select, click destination to place
+      - Double-click to auto-send to foundation
+      - Ctrl+Z / Undo button to undo
+    */
+
+    :root {
+      --black:#0a0a0a;--black-light:#111;--black-card:#181818;
+      --red:#e50000;--red-dim:#991111;--red-glow:rgba(229,0,0,0.15);
+      --white:#e8e0d8;--white-dim:#887f77;--gray:#333;--gray-light:#555;
+      --font-heading:'Space Mono',monospace;--font-body:'IBM Plex Mono',monospace;
+      --ease:cubic-bezier(0.23,1,0.32,1);--card-radius:6px;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden}
+    body{background:var(--black);color:var(--white);font-family:var(--font-body);font-weight:300;-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}
+
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(10,10,10,0.9);border-bottom:1px solid var(--gray);position:relative;z-index:50;min-height:40px}
+    .topbar-left{display:flex;align-items:center;gap:12px}
+    .topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .back-link{font-family:var(--font-heading);font-size:0.65rem;letter-spacing:1px;text-transform:uppercase;color:var(--white-dim);text-decoration:none;transition:color 0.2s}
+    .back-link:hover{color:var(--red);opacity:1}
+    .game-title{font-family:var(--font-heading);font-size:0.75rem;font-weight:700;color:var(--red);letter-spacing:2px;text-transform:uppercase}
+    .stat{font-family:var(--font-heading);font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:var(--white-dim)}
+    .stat span{color:var(--white);margin-left:4px}
+    .btn{font-family:var(--font-heading);font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--gray);background:var(--black);color:var(--white);padding:4px 10px;cursor:pointer;transition:all 0.2s}
+    .btn:hover{border-color:var(--red);color:var(--red)}
+
+    /* The board is the full remaining height. All cards are absolutely positioned. */
+    #board{position:relative;width:100%;height:calc(100vh - 40px);overflow:hidden}
+
+    /* Slot: a static drop-target outline */
+    .slot{position:absolute;border:1.5px dashed var(--gray);border-radius:var(--card-radius)}
+    .slot.fnd{border-color:var(--red-dim)}
+    .slot.fnd::after{content:attr(data-suit);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.3rem;color:var(--red-dim);opacity:0.35;pointer-events:none}
+    .slot.stock-reset{cursor:pointer}
+    .slot.stock-reset::after{content:'↻';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.1rem;color:var(--white-dim);opacity:0.5}
+
+    /* Card base */
+    .crd{position:absolute;border-radius:var(--card-radius);cursor:grab;font-family:var(--font-heading);touch-action:none;transition:box-shadow 0.1s}
+    .crd:active{cursor:grabbing}
+
+    /* Face-up */
+    .crd.up{background:var(--black-light);border:1.5px solid var(--gray);display:flex;flex-direction:column;justify-content:space-between}
+    .crd.up:hover{box-shadow:0 0 0 1px var(--white-dim)}
+    .crd.up.sel{box-shadow:0 0 0 2px var(--red),0 0 12px var(--red-glow)}
+    .ct{display:flex;align-items:center;gap:1px;padding:3px 4px 0}
+    .cv{font-size:0.7rem;font-weight:700;line-height:1}
+    .cs{font-size:0.55rem;line-height:1}
+    .cc{font-size:1.3rem;text-align:center;flex:1;display:flex;align-items:center;justify-content:center}
+    .cb{display:flex;align-items:center;gap:1px;transform:rotate(180deg);padding:3px 4px 0}
+    .crd.rs{color:#e53e3e}
+    .crd.bs{color:#cbd5e0}
+
+    /* Face-down — mascot on the back */
+    .crd.dn{background:var(--red-dim);border:1.5px solid #6b1111;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    .crd.dn::before{content:'';position:absolute;inset:3px;border:1px solid rgba(229,0,0,0.2);border-radius:3px;pointer-events:none}
+    .crd.dn svg{width:55%;opacity:0.5;pointer-events:none}
+
+    /* Dragging */
+    .crd.dragging{z-index:5000!important;box-shadow:0 10px 30px rgba(0,0,0,0.7),0 0 0 2px var(--red);cursor:grabbing;transition:none;pointer-events:none}
+    .crd.ghost{opacity:0.15;pointer-events:none}
+
+    /* Win overlay */
+    .win{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:200;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+    .win.visible{display:flex}
+    .win h2{font-family:var(--font-heading);font-size:1.6rem;font-weight:700;color:var(--red);letter-spacing:3px;text-transform:uppercase}
+    .win p{font-family:var(--font-body);font-size:0.85rem;color:var(--white-dim);text-align:center;line-height:2}
+    .win button{font-family:var(--font-heading);font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--red-dim);background:var(--red-dim);color:var(--white);padding:8px 24px;cursor:pointer;transition:all 0.2s}
+    .win button:hover{background:var(--red);border-color:var(--red)}
+
+    @media(max-width:480px){
+      .topbar{padding:6px 8px}
+      .stat{font-size:0.5rem}.btn{font-size:0.5rem;padding:3px 6px}
+      .back-link{font-size:0.55rem}.game-title{font-size:0.6rem}
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="../" class="back-link">← back</a>
+      <div class="game-title">Solitaire</div>
+    </div>
+    <div class="topbar-right">
+      <div class="stat">moves<span id="mvC">0</span></div>
+      <div class="stat">time<span id="tmr">0:00</span></div>
+      <button class="btn" onclick="undo()" style="color:var(--white-dim)">undo</button>
+      <button class="btn" onclick="newGame()">new game</button>
+    </div>
+  </div>
+  <div id="board"></div>
+  <div class="win" id="winO">
+    <h2>you win</h2>
+    <p id="winS"></p>
+    <button onclick="newGame()">play again</button>
+  </div>
+
+<script>
+/* 
+  ============================================================
+  CONSTANTS
+  ============================================================
+*/
+var SYM = ['♠','♥','♦','♣'];
+var SCOL = ['bs','rs','rs','bs']; /* black-suit / red-suit css class */
+var VN = ['','A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+var DRAW = 3;
+
+/* Mascot SVG for card backs (the hooded figure from the main site) */
+var MASCOT = '<svg viewBox="30 30 140 230" xmlns="http://www.w3.org/2000/svg">'
+  +'<path d="M100 20 C50 20,20 70,20 130 C20 180,30 220,40 260 L60 290 L140 290 L160 260 C170 220,180 180,180 130 C180 70,150 20,100 20Z" fill="#6b1111" stroke="#e50000" stroke-width="0.8" opacity="0.5"/>'
+  +'<path d="M100 30 C58 30,32 75,32 128 C32 170,38 200,45 235 L65 275 L135 275 L155 235 C162 200,168 170,168 128 C168 75,142 30,100 30Z" fill="#500d0d"/>'
+  +'<path d="M66 100 Q80 82,98 96" fill="none" stroke="#e50000" stroke-width="5" stroke-linecap="round"/>'
+  +'<line x1="113" y1="88" x2="135" y2="110" stroke="#e50000" stroke-width="5" stroke-linecap="round"/>'
+  +'<line x1="135" y1="88" x2="113" y2="110" stroke="#e50000" stroke-width="5" stroke-linecap="round"/>'
+  +'<polygon points="58,126 66,144 74,126" fill="#e50000"/><polygon points="78,126 86,146 94,126" fill="#e50000"/>'
+  +'<polygon points="98,125 106,146 114,125" fill="#e50000"/><polygon points="118,126 126,146 134,126" fill="#e50000"/>'
+  +'<polygon points="66,148 74,130 82,148" fill="#e50000"/><polygon points="88,150 96,130 104,150" fill="#e50000"/>'
+  +'<polygon points="110,150 118,130 126,150" fill="#e50000"/><polygon points="130,148 138,132 146,148" fill="#e50000"/>'
+  +'</svg>';
+
+/* 
+  ============================================================
+  GAME STATE
+  ============================================================
+*/
+var stock, waste, fnd, tab;
+var sel = null; /* {src,col,idx} */
+var mv = 0, sec = 0, tmr = null;
+var hist = [];
+
+/* Layout metrics */
+var CW, CH, GAP, PX, PY, CAS_U, CAS_D;
+
+function isRed(s){return s===1||s===2}
+
+/* 
+  ============================================================
+  LAYOUT — responsive card sizing
+  ============================================================
+*/
+function layout(){
+  var b=document.getElementById('board');
+  var bw=b.clientWidth, bh=b.clientHeight;
+  GAP=Math.max(4,Math.floor(bw*0.008));
+  CW=Math.floor((bw-GAP*8)/7);
+  CW=Math.min(CW,90);
+  CH=Math.round(CW*1.4);
+  PX=Math.floor((bw-(CW*7+GAP*6))/2);
+  PY=10;
+  CAS_U=Math.max(10,Math.round(CH*0.14));
+  CAS_D=Math.max(18,Math.round(CH*0.23));
+}
+function cx(c){return PX+c*(CW+GAP)}
+
+/* 
+  ============================================================
+  DECK, SHUFFLE, NEW GAME
+  ============================================================
+*/
+function mkDeck(){
+  var d=[];
+  for(var s=0;s<4;s++)for(var v=1;v<=13;v++)d.push({s:s,v:v,up:false});
+  return d;
+}
+function shuf(a){
+  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}
+  return a;
+}
+
+function newGame(){
+  var dk=shuf(mkDeck());
+  stock=[];waste=[];fnd=[[],[],[],[]];tab=[[],[],[],[],[],[],[]];
+  sel=null;mv=0;sec=0;hist=[];
+  clearInterval(tmr);tmr=null;
+  document.getElementById('winO').classList.remove('visible');
+  document.getElementById('tmr').textContent='0:00';
+  for(var i=0;i<7;i++)for(var j=0;j<=i;j++){var c=dk.pop();c.up=(j===i);tab[i].push(c)}
+  stock=dk.reverse();
+  layout();draw();stats();
+}
+
+function startT(){if(tmr)return;tmr=setInterval(function(){sec++;document.getElementById('tmr').textContent=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')},1000)}
+function stats(){document.getElementById('mvC').textContent=mv}
+
+/* 
+  ============================================================
+  RENDER (draw)
+  ============================================================
+  Builds the entire board as absolutely positioned elements.
+*/
+function draw(){
+  var bd=document.getElementById('board');
+  bd.innerHTML='';
+  var ty=PY;
+
+  /* Stock */
+  if(stock.length>0){
+    bd.appendChild(mkSlot(cx(0),ty,''));
+    var sc=mkCrd(stock[stock.length-1],cx(0),ty,5);
+    sc.onclick=function(e){e.stopPropagation();doStock()};
+    bd.appendChild(sc);
+  }else{
+    var rs=mkSlot(cx(0),ty,'stock-reset');
+    rs.onclick=function(){doReset()};
+    bd.appendChild(rs);
+  }
+
+  /* Waste — fan up to 3 cards horizontally */
+  var wn=Math.min(waste.length,3);
+  var ws=waste.length-wn;
+  var wf=Math.round(CW*0.32);
+  for(var i=0;i<wn;i++){
+    var wc=waste[ws+i];
+    var wx=cx(1)+i*wf;
+    var isTop=(i===wn-1);
+    var isSel=isTop&&sel&&sel.src==='w';
+    var el=mkCrd(wc,wx,ty,10+i,isSel);
+    if(isTop){
+      (function(){
+        el.onmousedown=function(e){dStart(e,'w',-1,waste.length-1)};
+        el.ontouchstart=function(e){dStart(e,'w',-1,waste.length-1)};
+        el.onclick=function(e){e.stopPropagation();clkW()};
+        el.ondblclick=function(e){e.stopPropagation();dblW()};
+      })();
+    }else{el.style.cursor='default';el.style.pointerEvents='none'}
+    bd.appendChild(el);
+  }
+
+  /* Foundations */
+  for(var fi=0;fi<4;fi++){
+    var fx=cx(fi+3);
+    var sl=mkSlot(fx,ty,'fnd');
+    sl.setAttribute('data-suit',SYM[fi]);
+    (function(f){sl.onclick=function(){clkF(f)}})(fi);
+    bd.appendChild(sl);
+    if(fnd[fi].length>0){
+      var fc=mkCrd(fnd[fi][fnd[fi].length-1],fx,ty,10);
+      (function(f){fc.onclick=function(){clkF(f)}})(fi);
+      bd.appendChild(fc);
+    }
+  }
+
+  /* Tableau */
+  var tby=ty+CH+10;
+  for(var col=0;col<7;col++){
+    var px=cx(col);
+    var pile=tab[col];
+    /* Empty slot */
+    var ts=mkSlot(px,tby,'');
+    (function(c){ts.onclick=function(){clkTE(c)}})(col);
+    bd.appendChild(ts);
+
+    var cy=tby;
+    for(var ci=0;ci<pile.length;ci++){
+      var cd=pile[ci];
+      var isSel=sel&&sel.src==='t'&&sel.col===col&&ci>=sel.idx;
+      var el=mkCrd(cd,px,cy,20+ci,isSel);
+      if(cd.up){
+        (function(c,i){
+          el.onmousedown=function(e){dStart(e,'t',c,i)};
+          el.ontouchstart=function(e){dStart(e,'t',c,i)};
+          el.onclick=function(e){e.stopPropagation();clkT(c,i)};
+          el.ondblclick=function(e){e.stopPropagation();dblT(c,i)};
+        })(col,ci);
+      }
+      bd.appendChild(el);
+      cy+=(cd.up?CAS_D:CAS_U);
+    }
+  }
+}
+
+function mkSlot(x,y,cls){
+  var d=document.createElement('div');
+  d.className='slot '+cls;
+  d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+CW+'px;height:'+CH+'px';
+  return d;
+}
+
+function mkCrd(c,x,y,z,isSel){
+  var d=document.createElement('div');
+  d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+CW+'px;height:'+CH+'px;z-index:'+z;
+  if(!c.up){
+    d.className='crd dn';
+    d.innerHTML=MASCOT;
+    return d;
+  }
+  d.className='crd up '+SCOL[c.s]+(isSel?' sel':'');
+  var sym=SYM[c.s],val=VN[c.v];
+  d.innerHTML='<div class="ct"><span class="cv">'+val+'</span><span class="cs">'+sym+'</span></div>'
+    +'<div class="cc">'+sym+'</div>'
+    +'<div class="cb"><span class="cv">'+val+'</span><span class="cs">'+sym+'</span></div>';
+  return d;
+}
+
+/* 
+  ============================================================
+  STOCK / WASTE (DRAW 3)
+  ============================================================
+*/
+function doStock(){
+  startT();if(stock.length===0)return;
+  push();
+  var n=Math.min(DRAW,stock.length);
+  for(var i=0;i<n;i++){var c=stock.pop();c.up=true;waste.push(c)}
+  mv++;sel=null;draw();stats();
+}
+function doReset(){
+  startT();if(waste.length===0)return;
+  push();
+  stock=waste.reverse().map(function(c){c.up=false;return c});
+  waste=[];mv++;sel=null;draw();stats();
+}
+
+/* 
+  ============================================================
+  CLICK INTERACTIONS
+  ============================================================
+*/
+function clkW(){
+  startT();if(waste.length===0)return;
+  if(sel&&sel.src==='w'){if(autoF(waste[waste.length-1],'w',-1))return;sel=null}
+  else{sel={src:'w',col:-1,idx:waste.length-1}}
+  draw();
+}
+function dblW(){startT();if(waste.length)autoF(waste[waste.length-1],'w',-1)}
+
+function clkF(fi){
+  startT();if(!sel)return;
+  var cs=gSel();
+  if(cs.length!==1){sel=null;draw();return}
+  if(canF(cs[0],fi)){push();rSel();fnd[fi].push(cs[0]);mv++;flip(sel.src,sel.col);sel=null;draw();stats();chkW()}
+  else{sel=null;draw()}
+}
+
+function clkT(col,ci){
+  startT();var p=tab[col];
+  if(!p[ci].up)return;
+  if(!sel){sel={src:'t',col:col,idx:ci};draw();return}
+  if(sel.src==='t'&&sel.col===col){
+    if(ci===p.length-1)autoF(p[ci],'t',col);
+    else{sel=null;draw()}
+    return;
+  }
+  var cs=gSel();
+  if(cs.length&&canT(cs[0],col)){
+    push();var rm=rSel();tab[col]=tab[col].concat(rm);mv++;flip(sel.src,sel.col);sel=null;draw();stats()
+  }else{sel={src:'t',col:col,idx:ci};draw()}
+}
+
+function clkTE(col){
+  startT();if(!sel)return;
+  var cs=gSel();
+  if(cs.length&&cs[0].v===13){
+    push();var rm=rSel();tab[col]=tab[col].concat(rm);mv++;flip(sel.src,sel.col);sel=null;draw();stats()
+  }else{sel=null;draw()}
+}
+
+function dblT(col,ci){startT();var p=tab[col];if(ci===p.length-1)autoF(p[ci],'t',col)}
+
+/* 
+  ============================================================
+  MOVE VALIDATION
+  ============================================================
+*/
+function canF(c,fi){var p=fnd[fi];if(!p.length)return c.v===1;var t=p[p.length-1];return c.s===t.s&&c.v===t.v+1}
+function canT(c,col){var p=tab[col];if(!p.length)return c.v===13;var t=p[p.length-1];if(!t.up)return false;return isRed(c.s)!==isRed(t.s)&&c.v===t.v-1}
+
+/* 
+  ============================================================
+  SELECTION HELPERS
+  ============================================================
+*/
+function gSel(){
+  if(!sel)return[];
+  if(sel.src==='w')return waste.length?[waste[waste.length-1]]:[];
+  if(sel.src==='t')return tab[sel.col].slice(sel.idx);
+  return[];
+}
+function rSel(){
+  if(sel.src==='w')return[waste.pop()];
+  if(sel.src==='t')return tab[sel.col].splice(sel.idx);
+  return[];
+}
+function flip(src,col){if(src!=='t'||col<0)return;var p=tab[col];if(p.length&&!p[p.length-1].up)p[p.length-1].up=true}
+function autoF(c,src,col){
+  for(var fi=0;fi<4;fi++){
+    if(canF(c,fi)){push();if(src==='w')waste.pop();else if(src==='t')tab[col].pop();fnd[fi].push(c);mv++;flip(src,col);sel=null;draw();stats();chkW();return true}
+  }return false;
+}
+
+/* 
+  ============================================================
+  DRAG AND DROP
+  ============================================================
+  Mouse + touch support. Picks up cards on drag, finds drop
+  target on release by checking hit against all valid slots.
+*/
+var dragEls=[],dragD=null,dOX=0,dOY=0,dSX=0,dSY=0,dragging=false;
+
+function dStart(e,src,col,idx){
+  if(e.type==='mousedown'&&e.button!==0)return;
+  e.preventDefault();
+  var px=e.clientX||(e.touches&&e.touches[0].clientX)||0;
+  var py=e.clientY||(e.touches&&e.touches[0].clientY)||0;
+  dSX=px;dSY=py;dragging=false;dragEls=[];
+
+  var cards=[];
+  if(src==='w'){if(!waste.length)return;cards=[waste[waste.length-1]]}
+  else if(src==='t'){var p=tab[col];if(!p[idx]||!p[idx].up)return;cards=p.slice(idx)}
+  else return;
+
+  dragD={src:src,col:col,idx:idx,cards:cards};
+
+  var onM=function(ev){
+    ev.preventDefault();
+    var mx=ev.clientX||(ev.touches&&ev.touches[0].clientX)||0;
+    var my=ev.clientY||(ev.touches&&ev.touches[0].clientY)||0;
+    if(!dragging){
+      if(Math.abs(mx-dSX)+Math.abs(my-dSY)<6)return;
+      dragging=true;
+      buildGhosts(px,py);
+    }
+    moveGhosts(mx,my);
+  };
+  var onU=function(ev){
+    document.removeEventListener('mousemove',onM);
+    document.removeEventListener('mouseup',onU);
+    document.removeEventListener('touchmove',onM,{passive:false});
+    document.removeEventListener('touchend',onU);
+    document.removeEventListener('touchcancel',onU);
+    if(dragging){
+      var ex=ev.clientX||(ev.changedTouches&&ev.changedTouches[0].clientX)||0;
+      var ey=ev.clientY||(ev.changedTouches&&ev.changedTouches[0].clientY)||0;
+      doDrop(ex,ey);
+    }
+    dragging=false;dragD=null;
+  };
+  document.addEventListener('mousemove',onM);
+  document.addEventListener('mouseup',onU);
+  document.addEventListener('touchmove',onM,{passive:false});
+  document.addEventListener('touchend',onU);
+  document.addEventListener('touchcancel',onU);
+}
+
+function buildGhosts(px,py){
+  var bd=document.getElementById('board');
+  var br=bd.getBoundingClientRect();
+  var cards=dragD.cards;
+
+  /* Calculate base position of source card */
+  var bx,by;
+  if(dragD.src==='w'){
+    var wn=Math.min(waste.length,3);
+    bx=cx(1)+(wn-1)*Math.round(CW*0.32);
+    by=PY;
+  }else{
+    bx=cx(dragD.col);
+    by=PY+CH+10;
+    var pile=tab[dragD.col];
+    for(var k=0;k<dragD.idx;k++)by+=(pile[k].up?CAS_D:CAS_U);
+  }
+  dOX=px-br.left-bx;
+  dOY=py-br.top-by;
+
+  for(var i=0;i<cards.length;i++){
+    var el=mkCrd(cards[i],bx,by+i*CAS_D,5000+i,false);
+    el.classList.add('dragging');
+    bd.appendChild(el);
+    dragEls.push({el:el,oy:i*CAS_D});
+  }
+}
+
+function moveGhosts(mx,my){
+  var br=document.getElementById('board').getBoundingClientRect();
+  var bx=mx-br.left-dOX;
+  var by=my-br.top-dOY;
+  dragEls.forEach(function(d){d.el.style.left=bx+'px';d.el.style.top=(by+d.oy)+'px'});
+}
+
+function doDrop(ex,ey){
+  dragEls.forEach(function(d){d.el.remove()});
+  dragEls=[];
+  if(!dragD)return;
+
+  var br=document.getElementById('board').getBoundingClientRect();
+  var bx=ex-br.left,by=ey-br.top;
+  var cards=dragD.cards;
+  var bot=cards[0];
+  var placed=false;
+
+  /* Check foundations (single card only) */
+  if(cards.length===1){
+    for(var fi=0;fi<4;fi++){
+      var fx=cx(fi+3),fy=PY;
+      if(bx>=fx-GAP&&bx<=fx+CW+GAP&&by>=fy-5&&by<=fy+CH+5){
+        if(canF(bot,fi)){
+          push();rmDrag();fnd[fi].push(bot);mv++;placed=true;flip(dragD.src,dragD.col);break;
+        }
+      }
+    }
+  }
+
+  /* Check tableau columns */
+  if(!placed){
+    for(var col=0;col<7;col++){
+      var px=cx(col);
+      if(bx>=px-CW*0.3&&bx<=px+CW+CW*0.3){
+        var pile=tab[col];
+        /* Don't drop back on same spot */
+        if(dragD.src==='t'&&dragD.col===col)continue;
+        if(pile.length===0){
+          if(bot.v===13){push();var rm=rmDrag();tab[col]=tab[col].concat(rm);mv++;placed=true;flip(dragD.src,dragD.col);break}
+        }else if(canT(bot,col)){
+          push();var rm=rmDrag();tab[col]=tab[col].concat(rm);mv++;placed=true;flip(dragD.src,dragD.col);break;
+        }
+      }
+    }
+  }
+
+  startT();sel=null;draw();stats();
+  if(placed)chkW();
+}
+
+function rmDrag(){
+  if(dragD.src==='w')return[waste.pop()];
+  if(dragD.src==='t')return tab[dragD.col].splice(dragD.idx);
+  return[];
+}
+
+/* 
+  ============================================================
+  UNDO — full state snapshots
+  ============================================================
+*/
+function push(){
+  hist.push({
+    stock:stock.map(function(c){return{s:c.s,v:c.v,up:c.up}}),
+    waste:waste.map(function(c){return{s:c.s,v:c.v,up:c.up}}),
+    fnd:fnd.map(function(f){return f.map(function(c){return{s:c.s,v:c.v,up:c.up}})}),
+    tab:tab.map(function(t){return t.map(function(c){return{s:c.s,v:c.v,up:c.up}})}),
+    mv:mv
+  });
+  if(hist.length>200)hist.shift();
+}
+function undo(){
+  if(!hist.length)return;var h=hist.pop();
+  stock=h.stock;waste=h.waste;fnd=h.fnd;tab=h.tab;mv=h.mv;
+  sel=null;draw();stats();
+}
+
+/* 
+  ============================================================
+  WIN CHECK
+  ============================================================
+*/
+function chkW(){
+  var n=0;fnd.forEach(function(f){n+=f.length});
+  if(n===52){
+    clearInterval(tmr);tmr=null;
+    var t=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
+    document.getElementById('winS').innerHTML='moves: '+mv+'<br>time: '+t;
+    setTimeout(function(){document.getElementById('winO').classList.add('visible')},400);
+  }
+}
+
+/* 
+  ============================================================
+  KEYBOARD + RESIZE
+  ============================================================
+*/
+document.addEventListener('keydown',function(e){
+  if((e.key==='z'||e.key==='Z')&&(e.ctrlKey||e.metaKey)){e.preventDefault();undo()}
+  else if(e.key==='Escape'){sel=null;draw()}
+  else if(e.key==='n'&&!e.ctrlKey&&!e.metaKey){if(confirm('Start a new game?'))newGame()}
+});
+document.getElementById('board').addEventListener('click',function(e){if(e.target===this){sel=null;draw()}});
+window.addEventListener('resize',function(){layout();draw()});
+
+/* INIT */
+newGame();
+</script>
+</body>
+</html>
