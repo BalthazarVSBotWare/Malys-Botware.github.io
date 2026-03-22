@@ -124,21 +124,18 @@
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
     .studio-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
 
-    /* Paint editor */
-    .paint-overlay{display:none;position:fixed;inset:0;z-index:250;background:var(--black);flex-direction:column}
-    .paint-overlay.visible{display:flex}
-    .paint-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--gray);gap:8px;flex-shrink:0;min-height:44px}
-    .paint-topbar-title{font-family:var(--font-heading);font-size:0.7rem;color:var(--red);letter-spacing:2px;text-transform:uppercase}
-    .paint-canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#111;touch-action:none}
-    .paint-canvas-wrap canvas{background:#111;display:block}
-    .paint-toolbar{display:flex;gap:4px;padding:8px;border-top:1px solid var(--gray);flex-wrap:wrap;align-items:center;justify-content:center;flex-shrink:0;padding-bottom:calc(8px + var(--safe-b))}
-    .paint-tool{width:36px;height:36px;border:1px solid var(--gray);background:var(--black);color:var(--white-dim);display:flex;align-items:center;justify-content:center;font-size:0.8rem;cursor:pointer;transition:all 0.15s}
-    .paint-tool.active{border-color:var(--red);color:var(--red);background:rgba(153,17,17,0.15)}
-    .paint-tool svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-    .paint-color{width:28px;height:28px;border:2px solid var(--gray);cursor:pointer;transition:border-color 0.15s}
-    .paint-color.active{border-color:var(--white)}
-    .paint-size{width:80px;height:28px;accent-color:var(--red);background:transparent;border:none;cursor:pointer}
-    .paint-sep{width:1px;height:28px;background:var(--gray);margin:0 4px}
+    /* Card editor */
+    .card-editor-overlay{display:none;position:fixed;inset:0;z-index:250;background:var(--black);flex-direction:column}
+    .card-editor-overlay.visible{display:flex}
+    .card-editor-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--gray);flex-shrink:0;min-height:44px}
+    .card-editor-preview{display:flex;gap:16px;justify-content:center;align-items:center;padding:20px;background:#080808;border-bottom:1px solid var(--gray);flex-shrink:0;min-height:180px}
+    .card-editor-preview .preview-card{border-radius:6px;display:flex;flex-direction:column;justify-content:space-between;position:relative}
+    .card-editor-preview .preview-back{border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+    .card-editor-preview .preview-back::before{content:'';position:absolute;inset:3px;border-radius:3px;pointer-events:none}
+    .card-editor-preview .preview-back svg{width:55%;opacity:0.5}
+    .card-editor-controls{flex:1;overflow-y:auto;padding:12px;-webkit-overflow-scrolling:touch;padding-bottom:calc(12px + var(--safe-b))}
+    .card-editor-section{margin-bottom:16px}
+    .card-editor-section h4{font-family:var(--font-heading);font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--gray)}
 
     /* SVG editor */
     .svg-editor{margin-top:16px}
@@ -270,7 +267,7 @@
   <div class="hero-info" id="heroInfo"></div>
   <button class="btn btn-full" onclick="openEditor('hero')" style="margin-bottom:8px">edit hero text</button>
   <div class="studio-tools">
-    <button class="btn" onclick="openPaint()">🎨 Paint Editor</button>
+    <button class="btn" onclick="openCardEditor()">🃏 Card Editor</button>
     <button class="btn" onclick="openPartsEditor()">✏️ Mascot Editor</button>
   </div>
   <div style="margin-top:24px">
@@ -325,7 +322,12 @@
 <!-- SETTINGS -->
 <div class="panel" id="panelSettings">
   <div class="panel-header">Settings</div>
-  <div class="panel-title">backup & restore</div>
+  <div class="panel-title">make it yours</div>
+  <div class="setting-group">
+    <h3>Theme</h3>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px" id="themePresets"></div>
+    <div id="themeCustom"></div>
+  </div>
   <div class="setting-group">
     <h3>Data</h3>
     <div class="setting-row">
@@ -413,46 +415,19 @@
 </div></div>
 
 <!-- ============================================================
-     PAINT EDITOR
+     CARD EDITOR
      ============================================================ -->
-<div class="paint-overlay" id="paintOverlay">
-  <div class="paint-topbar">
-    <button class="btn" onclick="closePaint()">← back</button>
-    <span class="paint-topbar-title">Paint</span>
-    <button class="btn btn-primary" onclick="savePainting()">Save</button>
+<div class="card-editor-overlay" id="cardEditorOverlay">
+  <div class="card-editor-topbar">
+    <button class="btn" onclick="closeCardEditor()">← back</button>
+    <span style="font-family:var(--font-heading);font-size:0.7rem;color:var(--red);letter-spacing:2px;text-transform:uppercase">Card Editor</span>
+    <div style="display:flex;gap:6px">
+      <button class="btn" onclick="resetCardConfig()">reset</button>
+      <button class="btn btn-primary" onclick="saveCardConfig()">save</button>
+    </div>
   </div>
-  <div class="paint-canvas-wrap" id="paintWrap">
-    <canvas id="paintCanvas"></canvas>
-  </div>
-  <div class="paint-toolbar">
-    <button class="paint-tool active" data-tool="pen" onclick="setPaintTool('pen')" title="Pen">
-      <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-    </button>
-    <button class="paint-tool" data-tool="eraser" onclick="setPaintTool('eraser')" title="Eraser">
-      <svg viewBox="0 0 24 24"><path d="M20 20H7L3 16a1 1 0 0 1 0-1.41l9.59-9.59a2 2 0 0 1 2.83 0L20.83 10.41a2 2 0 0 1 0 2.83Z"/><path d="m7 20 3-3"/></svg>
-    </button>
-    <button class="paint-tool" data-tool="line" onclick="setPaintTool('line')" title="Line">
-      <svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/></svg>
-    </button>
-    <button class="paint-tool" data-tool="rect" onclick="setPaintTool('rect')" title="Rectangle">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-    </button>
-    <button class="paint-tool" data-tool="circle" onclick="setPaintTool('circle')" title="Circle">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>
-    </button>
-    <div class="paint-sep"></div>
-    <div class="paint-color active" style="background:var(--red)" data-color="#e50000" onclick="setPaintColor(this)"></div>
-    <div class="paint-color" style="background:#e8e0d8" data-color="#e8e0d8" onclick="setPaintColor(this)"></div>
-    <div class="paint-color" style="background:#111" data-color="#111111" onclick="setPaintColor(this)"></div>
-    <div class="paint-color" style="background:#555" data-color="#555555" onclick="setPaintColor(this)"></div>
-    <input type="color" value="#e50000" id="paintCustomColor" style="width:28px;height:28px;border:2px solid var(--gray);padding:0;cursor:pointer;background:none" oninput="paintColor=this.value">
-    <div class="paint-sep"></div>
-    <input type="range" min="1" max="24" value="3" class="paint-size" id="paintSize">
-    <div class="paint-sep"></div>
-    <button class="paint-tool" onclick="paintUndo()" title="Undo">↩</button>
-    <button class="paint-tool" onclick="paintRedo()" title="Redo">↪</button>
-    <button class="paint-tool" onclick="paintClear()" title="Clear">✕</button>
-  </div>
+  <div class="card-editor-preview" id="cardPreviewArea"></div>
+  <div class="card-editor-controls" id="cardEditorControls"></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1003,130 +978,135 @@ function addNewPart(shape){
 }
 
 /* ============================================================
-   PAINT EDITOR
+   CARD EDITOR — customize solitaire card appearance
    ============================================================ */
-let paintCtx,paintTool='pen',paintColor='#e50000',paintDrawing=false;
-let paintHistory=[],paintHistoryIdx=-1;
-let paintStartX,paintStartY,paintSnapshot;
+const DEFAULT_CARD_CONFIG={
+  faceBg:'#111111',faceBorder:'#333333',
+  redColor:'#e53e3e',blackColor:'#cbd5e0',
+  suitSize:'1.3rem',valueSize:'0.7rem',
+  backBg:'#991111',backBorder:'#6b1111',
+  backInner:'rgba(229,0,0,0.2)',backMascotOpacity:0.5,
+  radius:6
+};
+let cardConfig=null;
 
-function openPaint(){
-  document.getElementById('paintOverlay').classList.add('visible');
-  const wrap=document.getElementById('paintWrap');
-  const canvas=document.getElementById('paintCanvas');
-  const w=wrap.clientWidth,h=wrap.clientHeight;
-  const dpr=window.devicePixelRatio||1;
-  canvas.width=w*dpr;canvas.height=h*dpr;
-  canvas.style.width=w+'px';canvas.style.height=h+'px';
-  paintCtx=canvas.getContext('2d');
-  paintCtx.scale(dpr,dpr);
-  /* Load existing painting */
-  dbGet('images','hero_painting').then(img=>{
-    if(img&&img.data){
-      const i=new Image();
-      i.onload=function(){paintCtx.drawImage(i,0,0,w,h);pushPaintState()};
-      i.src=img.data;
-    }else{
-      paintCtx.fillStyle='#111';paintCtx.fillRect(0,0,w,h);pushPaintState();
-    }
-  });
-}
-function closePaint(){document.getElementById('paintOverlay').classList.remove('visible')}
-async function savePainting(){
-  const canvas=document.getElementById('paintCanvas');
-  const data=canvas.toDataURL('image/png');
-  await dbPut('images',{id:'hero_painting',data:data});
-  closePaint();loadHero();showToast('Painting saved as hero');
+async function loadCardConfig(){
+  const saved=await dbGet('svg_config','card_config');
+  cardConfig=saved&&saved.config?Object.assign({},DEFAULT_CARD_CONFIG,saved.config):Object.assign({},DEFAULT_CARD_CONFIG);
 }
 
-function setPaintTool(t){
-  paintTool=t;
-  document.querySelectorAll('.paint-tool[data-tool]').forEach(el=>el.classList.toggle('active',el.dataset.tool===t));
+function openCardEditor(){
+  if(!cardConfig)cardConfig=Object.assign({},DEFAULT_CARD_CONFIG);
+  document.getElementById('cardEditorOverlay').classList.add('visible');
+  renderCardPreview();renderCardControls();
 }
-function setPaintColor(el){
-  paintColor=el.dataset.color;
-  document.querySelectorAll('.paint-color').forEach(e=>e.classList.remove('active'));
-  el.classList.add('active');
-  gf('paintCustomColor').value=paintColor;
+function closeCardEditor(){document.getElementById('cardEditorOverlay').classList.remove('visible')}
+async function saveCardConfig(){
+  await dbPut('svg_config',{id:'card_config',config:Object.assign({},cardConfig)});
+  window.cardConfig=cardConfig;
+  closeCardEditor();showToast('Card style saved');
 }
-
-function pushPaintState(){
-  const canvas=document.getElementById('paintCanvas');
-  paintHistoryIdx++;
-  paintHistory=paintHistory.slice(0,paintHistoryIdx);
-  paintHistory.push(canvas.toDataURL());
-  if(paintHistory.length>40){paintHistory.shift();paintHistoryIdx--}
-}
-function paintUndo(){
-  if(paintHistoryIdx<=0)return;
-  paintHistoryIdx--;restorePaintState();
-}
-function paintRedo(){
-  if(paintHistoryIdx>=paintHistory.length-1)return;
-  paintHistoryIdx++;restorePaintState();
-}
-function restorePaintState(){
-  const img=new Image();
-  img.onload=function(){
-    const canvas=document.getElementById('paintCanvas');
-    const w=canvas.style.width.replace('px',''),h=canvas.style.height.replace('px','');
-    paintCtx.clearRect(0,0,w,h);paintCtx.drawImage(img,0,0,w,h);
-  };
-  img.src=paintHistory[paintHistoryIdx];
-}
-function paintClear(){
-  const canvas=document.getElementById('paintCanvas');
-  const w=parseInt(canvas.style.width),h=parseInt(canvas.style.height);
-  paintCtx.fillStyle='#111';paintCtx.fillRect(0,0,w,h);pushPaintState();
+function resetCardConfig(){
+  if(!confirm('Reset cards to default?'))return;
+  cardConfig=Object.assign({},DEFAULT_CARD_CONFIG);
+  renderCardPreview();renderCardControls();showToast('Reset');
 }
 
-/* Touch + mouse drawing */
-(function(){
-  const canvas=document.getElementById('paintCanvas');
-  function pos(e){
-    const r=canvas.getBoundingClientRect();
-    const t=e.touches?e.touches[0]:e;
-    return{x:t.clientX-r.left,y:t.clientY-r.top};
-  }
-  function down(e){
-    e.preventDefault();paintDrawing=true;
-    const p=pos(e);paintStartX=p.x;paintStartY=p.y;
-    const sz=parseInt(gf('paintSize').value)||3;
-    if(paintTool==='pen'||paintTool==='eraser'){
-      paintCtx.beginPath();paintCtx.moveTo(p.x,p.y);
-      paintCtx.lineWidth=sz;paintCtx.lineCap='round';paintCtx.lineJoin='round';
-      paintCtx.strokeStyle=paintTool==='eraser'?'#111111':paintColor;
-      paintCtx.globalCompositeOperation=paintTool==='eraser'?'source-over':'source-over';
-    }
-    if(paintTool==='line'||paintTool==='rect'||paintTool==='circle'){
-      paintSnapshot=paintCtx.getImageData(0,0,canvas.width,canvas.height);
-    }
-  }
-  function move(e){
-    if(!paintDrawing)return;e.preventDefault();
-    const p=pos(e);const sz=parseInt(gf('paintSize').value)||3;
-    if(paintTool==='pen'||paintTool==='eraser'){
-      paintCtx.lineTo(p.x,p.y);paintCtx.stroke();
-    }else if(paintSnapshot){
-      paintCtx.putImageData(paintSnapshot,0,0);
-      paintCtx.lineWidth=sz;paintCtx.strokeStyle=paintColor;paintCtx.lineCap='round';
-      if(paintTool==='line'){paintCtx.beginPath();paintCtx.moveTo(paintStartX,paintStartY);paintCtx.lineTo(p.x,p.y);paintCtx.stroke()}
-      else if(paintTool==='rect'){paintCtx.strokeRect(paintStartX,paintStartY,p.x-paintStartX,p.y-paintStartY)}
-      else if(paintTool==='circle'){
-        const rx=Math.abs(p.x-paintStartX)/2,ry=Math.abs(p.y-paintStartY)/2;
-        const cx=paintStartX+(p.x-paintStartX)/2,cy=paintStartY+(p.y-paintStartY)/2;
-        paintCtx.beginPath();paintCtx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);paintCtx.stroke();
-      }
-    }
-  }
-  function up(e){
-    if(!paintDrawing)return;paintDrawing=false;paintSnapshot=null;pushPaintState();
-  }
-  canvas.addEventListener('mousedown',down);canvas.addEventListener('mousemove',move);
-  canvas.addEventListener('mouseup',up);canvas.addEventListener('mouseleave',up);
-  canvas.addEventListener('touchstart',down,{passive:false});
-  canvas.addEventListener('touchmove',move,{passive:false});
-  canvas.addEventListener('touchend',up);canvas.addEventListener('touchcancel',up);
-})();
+function renderCardPreview(){
+  const c=cardConfig;const w=70;const h=Math.round(w*1.4);
+  const mascotSvg='<svg viewBox="30 30 140 230" xmlns="http://www.w3.org/2000/svg" style="width:55%;opacity:'+c.backMascotOpacity+'"><path d="M100 20 C50 20,20 70,20 130 C20 180,30 220,40 260 L60 290 L140 290 L160 260 C170 220,180 180,180 130 C180 70,150 20,100 20Z" fill="'+c.backBorder+'" stroke="'+c.redColor+'" stroke-width="0.8" opacity="0.5"/><path d="M100 30 C58 30,32 75,32 128 C32 170,38 200,45 235 L65 275 L135 275 L155 235 C162 200,168 170,168 128 C168 75,142 30,100 30Z" fill="'+c.backBg+'"/></svg>';
+  let html='';
+  /* Face-up card */
+  html+='<div style="text-align:center"><div class="preview-card" style="width:'+w+'px;height:'+h+'px;background:'+c.faceBg+';border:1.5px solid '+c.faceBorder+';border-radius:'+c.radius+'px;padding:3px 4px;color:'+c.redColor+'">';
+  html+='<div style="display:flex;align-items:center;gap:1px"><span style="font-size:'+c.valueSize+';font-weight:700;font-family:var(--font-heading)">K</span><span style="font-size:0.55rem">♥</span></div>';
+  html+='<div style="font-size:'+c.suitSize+';text-align:center;flex:1;display:flex;align-items:center;justify-content:center">♥</div>';
+  html+='<div style="display:flex;align-items:center;gap:1px;transform:rotate(180deg)"><span style="font-size:'+c.valueSize+';font-weight:700;font-family:var(--font-heading)">K</span><span style="font-size:0.55rem">♥</span></div>';
+  html+='</div><div style="font-size:0.5rem;color:var(--white-dim);margin-top:4px;font-family:var(--font-heading)">FACE</div></div>';
+  /* Black suit sample */
+  html+='<div style="text-align:center"><div class="preview-card" style="width:'+w+'px;height:'+h+'px;background:'+c.faceBg+';border:1.5px solid '+c.faceBorder+';border-radius:'+c.radius+'px;padding:3px 4px;color:'+c.blackColor+'">';
+  html+='<div style="display:flex;align-items:center;gap:1px"><span style="font-size:'+c.valueSize+';font-weight:700;font-family:var(--font-heading)">A</span><span style="font-size:0.55rem">♠</span></div>';
+  html+='<div style="font-size:'+c.suitSize+';text-align:center;flex:1;display:flex;align-items:center;justify-content:center">♠</div>';
+  html+='<div style="display:flex;align-items:center;gap:1px;transform:rotate(180deg)"><span style="font-size:'+c.valueSize+';font-weight:700;font-family:var(--font-heading)">A</span><span style="font-size:0.55rem">♠</span></div>';
+  html+='</div><div style="font-size:0.5rem;color:var(--white-dim);margin-top:4px;font-family:var(--font-heading)">BLACK</div></div>';
+  /* Face-down card */
+  html+='<div style="text-align:center"><div class="preview-back" style="width:'+w+'px;height:'+h+'px;background:'+c.backBg+';border:1.5px solid '+c.backBorder+';border-radius:'+c.radius+'px">';
+  html+='<div style="position:absolute;inset:3px;border:1px solid '+c.backInner+';border-radius:3px"></div>';
+  html+=mascotSvg;
+  html+='</div><div style="font-size:0.5rem;color:var(--white-dim);margin-top:4px;font-family:var(--font-heading)">BACK</div></div>';
+  document.getElementById('cardPreviewArea').innerHTML=html;
+}
+
+function renderCardControls(){
+  const c=cardConfig;
+  function colorRow(label,prop){return'<div class="part-slider-row"><label>'+label+'</label><input type="color" value="'+c[prop]+'" oninput="updateCard(\''+prop+'\',this.value)"><div class="slider-val" style="font-size:0.5rem">'+c[prop]+'</div></div>'}
+  function rangeRow(label,prop,val,min,max){return'<div class="part-slider-row"><label>'+label+'</label><input type="range" min="'+min+'" max="'+max+'" value="'+val+'" oninput="updateCard(\''+prop+'\',this.value)"><div class="slider-val">'+val+'</div></div>'}
+  let html='';
+  html+='<div class="card-editor-section"><h4>Card Face</h4>';
+  html+=colorRow('Background','faceBg');
+  html+=colorRow('Border','faceBorder');
+  html+=colorRow('Red suits','redColor');
+  html+=colorRow('Black suits','blackColor');
+  html+=rangeRow('Radius','radius',c.radius,0,16);
+  html+='</div>';
+  html+='<div class="card-editor-section"><h4>Card Back</h4>';
+  html+=colorRow('Background','backBg');
+  html+=colorRow('Border','backBorder');
+  html+=colorRow('Inner line','backInner');
+  html+=rangeRow('Mascot','backMascotOpacity',Math.round(c.backMascotOpacity*100),0,100);
+  html+='</div>';
+  document.getElementById('cardEditorControls').innerHTML=html;
+}
+
+function updateCard(prop,value){
+  if(prop==='radius')cardConfig[prop]=parseInt(value);
+  else if(prop==='backMascotOpacity')cardConfig[prop]=parseFloat(value)/100;
+  else cardConfig[prop]=value;
+  renderCardPreview();renderCardControls();
+}
+
+/* ============================================================
+   THEME SYSTEM — per-device color customization
+   ============================================================ */
+const THEME_PRESETS=[
+  {name:'Crimson',accent:'#e50000',accentDim:'#991111',glow:'rgba(229,0,0,0.15)'},
+  {name:'Ocean',accent:'#0ea5e9',accentDim:'#0369a1',glow:'rgba(14,165,233,0.15)'},
+  {name:'Emerald',accent:'#22c55e',accentDim:'#166534',glow:'rgba(34,197,94,0.15)'},
+  {name:'Violet',accent:'#a855f7',accentDim:'#7e22ce',glow:'rgba(168,85,247,0.15)'},
+  {name:'Amber',accent:'#f59e0b',accentDim:'#b45309',glow:'rgba(245,158,11,0.15)'},
+  {name:'Rose',accent:'#f43f5e',accentDim:'#be123c',glow:'rgba(244,63,94,0.15)'},
+  {name:'Cyan',accent:'#06b6d4',accentDim:'#0e7490',glow:'rgba(6,182,212,0.15)'},
+  {name:'Lime',accent:'#84cc16',accentDim:'#4d7c0f',glow:'rgba(132,204,22,0.15)'}
+];
+let currentTheme=null;
+async function loadTheme(){
+  const saved=await dbGet('settings','app_theme');
+  if(saved&&saved.value){currentTheme=typeof saved.value==='string'?JSON.parse(saved.value):saved.value}
+  else{currentTheme={accent:'#e50000',accentDim:'#991111',glow:'rgba(229,0,0,0.15)'}}
+  applyTheme();renderThemeUI();
+}
+function applyTheme(){
+  if(!currentTheme)return;var r=document.documentElement.style;
+  r.setProperty('--red',currentTheme.accent);r.setProperty('--red-dim',currentTheme.accentDim);r.setProperty('--red-glow',currentTheme.glow);
+}
+async function saveTheme(){
+  await dbPut('settings',{key:'app_theme',value:currentTheme});applyTheme();renderThemeUI();showToast('Theme saved');
+}
+function setThemePreset(idx){
+  var p=THEME_PRESETS[idx];currentTheme={accent:p.accent,accentDim:p.accentDim,glow:p.glow};saveTheme();
+}
+function setThemeCustom(prop,value){
+  if(!currentTheme)currentTheme={accent:'#e50000',accentDim:'#991111',glow:'rgba(229,0,0,0.15)'};
+  if(prop==='accent'){currentTheme.accent=value;var r=parseInt(value.slice(1,3),16),g=parseInt(value.slice(3,5),16),b=parseInt(value.slice(5,7),16);currentTheme.accentDim='#'+Math.round(r*0.6).toString(16).padStart(2,'0')+Math.round(g*0.6).toString(16).padStart(2,'0')+Math.round(b*0.6).toString(16).padStart(2,'0');currentTheme.glow='rgba('+r+','+g+','+b+',0.15)'}
+  else if(prop==='accentDim'){currentTheme.accentDim=value}
+  saveTheme();
+}
+function renderThemeUI(){
+  var el=document.getElementById('themePresets');if(!el)return;
+  el.innerHTML=THEME_PRESETS.map(function(p,i){var active=currentTheme&&currentTheme.accent===p.accent;return'<button onclick="setThemePreset('+i+')" style="width:36px;height:36px;background:'+p.accent+';border:2px solid '+(active?'var(--white)':'var(--gray)')+';cursor:pointer;transition:border-color 0.15s" title="'+p.name+'"></button>'}).join('');
+  var ce=document.getElementById('themeCustom');if(!ce)return;
+  var ac=currentTheme?currentTheme.accent:'#e50000',ad=currentTheme?currentTheme.accentDim:'#991111';
+  ce.innerHTML='<div style="display:flex;gap:12px;align-items:center;margin-top:4px"><div style="display:flex;align-items:center;gap:6px"><label style="font-family:var(--font-heading);font-size:0.55rem;letter-spacing:1px;text-transform:uppercase;color:var(--white-dim)">Accent</label><input type="color" value="'+ac+'" oninput="setThemeCustom(\'accent\',this.value)" style="width:36px;height:28px;border:1px solid var(--gray);padding:1px;cursor:pointer;background:none"></div><div style="display:flex;align-items:center;gap:6px"><label style="font-family:var(--font-heading);font-size:0.55rem;letter-spacing:1px;text-transform:uppercase;color:var(--white-dim)">Dim</label><input type="color" value="'+ad+'" oninput="setThemeCustom(\'accentDim\',this.value)" style="width:36px;height:28px;border:1px solid var(--gray);padding:1px;cursor:pointer;background:none"></div></div>';
+}
 
 /* ============================================================
    EXPORT / IMPORT / MERGE — transfer-format compatible
@@ -1205,8 +1185,8 @@ function newGame(){var dk=shuf(mkDeck());stock=[];waste=[];fnd=[[],[],[],[]];tab
 function startT(){if(tmr)return;tmr=setInterval(function(){sec++;document.getElementById('solTm').textContent=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')},1000)}
 function stats(){document.getElementById('solMv').textContent=mv}
 function draw(){var bd=document.getElementById('solBoard');bd.innerHTML='';var ty=PY;if(stock.length>0){bd.appendChild(mkSlot(cx(0),ty,''));var sc=mkCrd(stock[stock.length-1],cx(0),ty,5);sc.onclick=function(e){e.stopPropagation();doStock()};bd.appendChild(sc)}else{var rs=mkSlot(cx(0),ty,'stock-reset');rs.onclick=function(){doReset()};bd.appendChild(rs)}var wn=Math.min(waste.length,3);var ws=waste.length-wn;var wf=Math.round(CW*0.32);for(var i=0;i<wn;i++){var wc=waste[ws+i];var wx=cx(1)+i*wf;var isTop=(i===wn-1);var isSel=isTop&&sel&&sel.src==='w';var el=mkCrd(wc,wx,ty,10+i,isSel);if(isTop){(function(){el.onmousedown=function(e){dStart(e,'w',-1,waste.length-1)};el.ontouchstart=function(e){dStart(e,'w',-1,waste.length-1)};el.onclick=function(e){e.stopPropagation();clkW()};el.ondblclick=function(e){e.stopPropagation();dblW()}})()}else{el.style.cursor='default';el.style.pointerEvents='none'}bd.appendChild(el)}for(var fi=0;fi<4;fi++){var fx=cx(fi+3);var sl=mkSlot(fx,ty,'fnd');sl.setAttribute('data-suit',SYM[fi]);(function(f){sl.onclick=function(){clkF(f)}})(fi);bd.appendChild(sl);if(fnd[fi].length>0){var fc=mkCrd(fnd[fi][fnd[fi].length-1],fx,ty,10);(function(f){fc.onclick=function(){clkF(f)}})(fi);bd.appendChild(fc)}}var tby=ty+CH+10;for(var col=0;col<7;col++){var px=cx(col);var pile=tab[col];var ts=mkSlot(px,tby,'');(function(c){ts.onclick=function(){clkTE(c)}})(col);bd.appendChild(ts);var cy=tby;for(var ci=0;ci<pile.length;ci++){var cd=pile[ci];var isSel2=sel&&sel.src==='t'&&sel.col===col&&ci>=sel.idx;var el2=mkCrd(cd,px,cy,20+ci,isSel2);if(cd.up){(function(c,i){el2.onmousedown=function(e){dStart(e,'t',c,i)};el2.ontouchstart=function(e){dStart(e,'t',c,i)};el2.onclick=function(e){e.stopPropagation();clkT(c,i)};el2.ondblclick=function(e){e.stopPropagation();dblT(c,i)}})(col,ci)}bd.appendChild(el2);cy+=(cd.up?CAS_D:CAS_U)}}}
-function mkSlot(x,y,cls){var d=document.createElement('div');d.className='sol-slot '+cls;d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+CW+'px;height:'+CH+'px';return d}
-function mkCrd(c,x,y,z,isSel){var d=document.createElement('div');d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+CW+'px;height:'+CH+'px;z-index:'+z;if(!c.up){d.className='sol-crd dn';d.innerHTML=MASCOT;return d}d.className='sol-crd up '+SCOL[c.s]+(isSel?' sel':'');var sym=SYM[c.s],val=VN[c.v];d.innerHTML='<div class="sol-ct"><span class="sol-cv">'+val+'</span><span class="sol-cs">'+sym+'</span></div><div class="sol-cc">'+sym+'</div><div class="sol-cb"><span class="sol-cv">'+val+'</span><span class="sol-cs">'+sym+'</span></div>';return d}
+function mkSlot(x,y,cls){var d=document.createElement('div');d.className='sol-slot '+cls;var cc=window.cardConfig||{};d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+CW+'px;height:'+CH+'px;border-radius:'+(cc.radius||6)+'px';return d}
+function mkCrd(c,x,y,z,isSel){var cc=window.cardConfig||{};var rad=cc.radius||6;var d=document.createElement('div');d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+CW+'px;height:'+CH+'px;z-index:'+z;if(!c.up){d.className='sol-crd dn';d.style.background=cc.backBg||'#991111';d.style.borderColor=cc.backBorder||'#6b1111';d.style.borderRadius=rad+'px';d.innerHTML='<div style="position:absolute;inset:3px;border:1px solid '+(cc.backInner||'rgba(229,0,0,0.2)')+';border-radius:3px;pointer-events:none"></div><div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%"><div style="width:55%;opacity:'+(cc.backMascotOpacity!==undefined?cc.backMascotOpacity:0.5)+'">'+MASCOT+'</div></div>';return d}var rc=cc.redColor||'#e53e3e',bc=cc.blackColor||'#cbd5e0';var col=SCOL[c.s]==='rs'?rc:bc;d.className='sol-crd up'+(isSel?' sel':'');d.style.background=cc.faceBg||'#111';d.style.borderColor=cc.faceBorder||'#333';d.style.borderRadius=rad+'px';d.style.border='1.5px solid '+(cc.faceBorder||'#333');d.style.color=col;var sym=SYM[c.s],val=VN[c.v];d.innerHTML='<div class="sol-ct"><span class="sol-cv">'+val+'</span><span class="sol-cs">'+sym+'</span></div><div class="sol-cc">'+sym+'</div><div class="sol-cb"><span class="sol-cv">'+val+'</span><span class="sol-cs">'+sym+'</span></div>';return d}
 function doStock(){startT();if(!stock.length)return;push();var n=Math.min(DRAW,stock.length);for(var i=0;i<n;i++){var c=stock.pop();c.up=true;waste.push(c)}mv++;sel=null;draw();stats()}
 function doReset(){startT();if(!waste.length)return;push();stock=waste.reverse().map(function(c){c.up=false;return c});waste=[];mv++;sel=null;draw();stats()}
 function clkW(){startT();if(!waste.length)return;if(sel&&sel.src==='w'){if(autoF(waste[waste.length-1],'w',-1))return;sel=null}else{sel={src:'w',col:-1,idx:waste.length-1}}draw()}
@@ -1243,7 +1223,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch
 /* ============================================================
    INIT
    ============================================================ */
-function loadAll(){loadEntries();loadTiles();loadBeliefs();loadProjects();loadGames();loadResources();loadSocials();loadHero();loadAbout();loadFooter()}
+function loadAll(){loadCardConfig().then(function(){window.cardConfig=cardConfig});loadTheme();loadEntries();loadTiles();loadBeliefs();loadProjects();loadGames();loadResources();loadSocials();loadHero();loadAbout();loadFooter()}
 openDB().then(()=>loadAll()).catch(e=>console.error('DB error:',e));
 </script>
 </body>
