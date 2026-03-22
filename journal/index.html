@@ -193,6 +193,50 @@
     .parts-add-bar{margin-top:12px;padding-top:10px;border-top:1px solid var(--gray)}
     .parts-add-bar summary{font-family:var(--font-heading);font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:var(--white-dim);cursor:pointer;margin-bottom:8px}
     .shape-chips{display:flex;gap:4px;flex-wrap:wrap}
+
+    /* Solitaire game overlay */
+    .sol-overlay{display:none;position:fixed;inset:0;z-index:270;background:var(--black);flex-direction:column}
+    .sol-overlay.visible{display:flex}
+    .sol-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(10,10,10,0.9);border-bottom:1px solid var(--gray);min-height:40px;flex-shrink:0}
+    .sol-topbar-left{display:flex;align-items:center;gap:12px}
+    .sol-topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .sol-title{font-family:var(--font-heading);font-size:0.7rem;font-weight:700;color:var(--red);letter-spacing:2px;text-transform:uppercase}
+    .sol-stat{font-family:var(--font-heading);font-size:0.55rem;letter-spacing:1px;text-transform:uppercase;color:var(--white-dim)}
+    .sol-stat span{color:var(--white);margin-left:4px}
+    #solBoard{position:relative;flex:1;overflow:hidden;touch-action:none}
+    .sol-slot{position:absolute;border:1.5px dashed var(--gray);border-radius:6px}
+    .sol-slot.fnd{border-color:var(--red-dim)}
+    .sol-slot.fnd::after{content:attr(data-suit);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.3rem;color:var(--red-dim);opacity:0.35;pointer-events:none}
+    .sol-slot.stock-reset{cursor:pointer}
+    .sol-slot.stock-reset::after{content:'↻';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.1rem;color:var(--white-dim);opacity:0.5}
+    .sol-crd{position:absolute;border-radius:6px;cursor:grab;font-family:var(--font-heading);touch-action:none;transition:box-shadow 0.1s}
+    .sol-crd:active{cursor:grabbing}
+    .sol-crd.up{background:var(--black-light);border:1.5px solid var(--gray);display:flex;flex-direction:column;justify-content:space-between}
+    .sol-crd.up:hover{box-shadow:0 0 0 1px var(--white-dim)}
+    .sol-crd.up.sel{box-shadow:0 0 0 2px var(--red),0 0 12px var(--red-glow)}
+    .sol-ct{display:flex;align-items:center;gap:1px;padding:3px 4px 0}
+    .sol-cv{font-size:0.7rem;font-weight:700;line-height:1}
+    .sol-cs{font-size:0.55rem;line-height:1}
+    .sol-cc{font-size:1.3rem;text-align:center;flex:1;display:flex;align-items:center;justify-content:center}
+    .sol-cb{display:flex;align-items:center;gap:1px;transform:rotate(180deg);padding:3px 4px 0}
+    .sol-crd.rs{color:#e53e3e}.sol-crd.bs{color:#cbd5e0}
+    .sol-crd.dn{background:var(--red-dim);border:1.5px solid #6b1111;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    .sol-crd.dn::before{content:'';position:absolute;inset:3px;border:1px solid rgba(229,0,0,0.2);border-radius:3px;pointer-events:none}
+    .sol-crd.dn svg{width:55%;opacity:0.5;pointer-events:none}
+    .sol-crd.dragging{z-index:5000!important;box-shadow:0 10px 30px rgba(0,0,0,0.7),0 0 0 2px var(--red);cursor:grabbing;transition:none;pointer-events:none}
+    .sol-win{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:280;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+    .sol-win.visible{display:flex}
+    .sol-win h2{font-family:var(--font-heading);font-size:1.6rem;font-weight:700;color:var(--red);letter-spacing:3px;text-transform:uppercase}
+    .sol-win p{font-family:var(--font-body);font-size:0.85rem;color:var(--white-dim);text-align:center;line-height:2}
+    .sol-win button{font-family:var(--font-heading);font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--red-dim);background:var(--red-dim);color:var(--white);padding:8px 24px;cursor:pointer}
+
+    /* Solitaire play card in games list */
+    .sol-play-card{display:flex;align-items:center;gap:16px;padding:16px;border:1px solid var(--gray);background:var(--black-card);cursor:pointer;transition:all 0.3s var(--ease);margin-bottom:12px}
+    .sol-play-card:hover,.sol-play-card:active{border-color:var(--red-dim);transform:translateX(4px)}
+    .sol-play-card .sol-play-icon{font-size:2rem;color:var(--red);width:48px;text-align:center;flex-shrink:0}
+    .sol-play-card .sol-play-info{flex:1}
+    .sol-play-card .sol-play-info h3{font-family:var(--font-heading);font-size:0.85rem;font-weight:700;color:var(--white);margin-bottom:4px}
+    .sol-play-card .sol-play-info p{font-size:0.75rem;color:var(--white-dim)}
   </style>
 </head>
 <body>
@@ -257,6 +301,14 @@
     <div id="projectsList"></div>
   </div>
   <div class="sub-content" id="subGames">
+    <div class="sol-play-card" onclick="SOL.open()">
+      <div class="sol-play-icon">♠</div>
+      <div class="sol-play-info">
+        <h3>Solitaire</h3>
+        <p>Klondike draw-3. Drag & drop, undo, touch support.</p>
+      </div>
+      <span style="color:var(--red);font-size:1.2rem">→</span>
+    </div>
     <div class="add-bar"><button class="btn btn-primary btn-full" onclick="openEditor('game')">+ add game</button></div>
     <div id="gamesList"></div>
   </div>
@@ -431,6 +483,28 @@
         </div>
       </details>
     </div>
+  </div>
+</div>
+
+<!-- SOLITAIRE GAME -->
+<div class="sol-overlay" id="solOverlay">
+  <div class="sol-topbar">
+    <div class="sol-topbar-left">
+      <button class="btn" onclick="SOL.close()">← back</button>
+      <div class="sol-title">Solitaire</div>
+    </div>
+    <div class="sol-topbar-right">
+      <div class="sol-stat">moves<span id="solMv">0</span></div>
+      <div class="sol-stat">time<span id="solTm">0:00</span></div>
+      <button class="btn" onclick="SOL.undo()" style="color:var(--white-dim)">undo</button>
+      <button class="btn" onclick="SOL.newGame()">new</button>
+    </div>
+  </div>
+  <div id="solBoard"></div>
+  <div class="sol-win" id="solWin">
+    <h2>you win</h2>
+    <p id="solWinS"></p>
+    <button onclick="SOL.newGame()">play again</button>
   </div>
 </div>
 
@@ -1112,6 +1186,54 @@ async function clearAllData(){
   for(const s of STORES)await dbClear(s);
   loadAll();showToast('All data cleared');
 }
+
+/* ============================================================
+   SOLITAIRE — Klondike Draw-3 (namespaced as SOL)
+   ============================================================ */
+var SOL=(function(){
+var SYM=['♠','♥','♦','♣'],SCOL=['bs','rs','rs','bs'],VN=['','A','2','3','4','5','6','7','8','9','10','J','Q','K'],DRAW=3;
+var MASCOT='<svg viewBox="30 30 140 230" xmlns="http://www.w3.org/2000/svg"><path d="M100 20 C50 20,20 70,20 130 C20 180,30 220,40 260 L60 290 L140 290 L160 260 C170 220,180 180,180 130 C180 70,150 20,100 20Z" fill="#6b1111" stroke="#e50000" stroke-width="0.8" opacity="0.5"/><path d="M100 30 C58 30,32 75,32 128 C32 170,38 200,45 235 L65 275 L135 275 L155 235 C162 200,168 170,168 128 C168 75,142 30,100 30Z" fill="#500d0d"/><path d="M66 100 Q80 82,98 96" fill="none" stroke="#e50000" stroke-width="5" stroke-linecap="round"/><line x1="113" y1="88" x2="135" y2="110" stroke="#e50000" stroke-width="5" stroke-linecap="round"/><line x1="135" y1="88" x2="113" y2="110" stroke="#e50000" stroke-width="5" stroke-linecap="round"/><polygon points="58,126 66,144 74,126" fill="#e50000"/><polygon points="78,126 86,146 94,126" fill="#e50000"/><polygon points="98,125 106,146 114,125" fill="#e50000"/><polygon points="118,126 126,146 134,126" fill="#e50000"/><polygon points="66,148 74,130 82,148" fill="#e50000"/><polygon points="88,150 96,130 104,150" fill="#e50000"/><polygon points="110,150 118,130 126,150" fill="#e50000"/><polygon points="130,148 138,132 146,148" fill="#e50000"/></svg>';
+var stock,waste,fnd,tab,sel=null,mv=0,sec=0,tmr=null,hist=[];
+var CW,CH,GAP,PX,PY,CAS_U,CAS_D;
+var dragEls=[],dragD=null,dOX=0,dOY=0,dSX=0,dSY=0,dragging=false;
+function isRed(s){return s===1||s===2}
+function layout(){var b=document.getElementById('solBoard');var bw=b.clientWidth,bh=b.clientHeight;GAP=Math.max(4,Math.floor(bw*0.008));CW=Math.floor((bw-GAP*8)/7);CW=Math.min(CW,90);CH=Math.round(CW*1.4);PX=Math.floor((bw-(CW*7+GAP*6))/2);PY=10;CAS_U=Math.max(10,Math.round(CH*0.14));CAS_D=Math.max(18,Math.round(CH*0.23))}
+function cx(c){return PX+c*(CW+GAP)}
+function mkDeck(){var d=[];for(var s=0;s<4;s++)for(var v=1;v<=13;v++)d.push({s:s,v:v,up:false});return d}
+function shuf(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function newGame(){var dk=shuf(mkDeck());stock=[];waste=[];fnd=[[],[],[],[]];tab=[[],[],[],[],[],[],[]];sel=null;mv=0;sec=0;hist=[];clearInterval(tmr);tmr=null;document.getElementById('solWin').classList.remove('visible');document.getElementById('solTm').textContent='0:00';for(var i=0;i<7;i++)for(var j=0;j<=i;j++){var c=dk.pop();c.up=(j===i);tab[i].push(c)}stock=dk.reverse();layout();draw();stats()}
+function startT(){if(tmr)return;tmr=setInterval(function(){sec++;document.getElementById('solTm').textContent=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')},1000)}
+function stats(){document.getElementById('solMv').textContent=mv}
+function draw(){var bd=document.getElementById('solBoard');bd.innerHTML='';var ty=PY;if(stock.length>0){bd.appendChild(mkSlot(cx(0),ty,''));var sc=mkCrd(stock[stock.length-1],cx(0),ty,5);sc.onclick=function(e){e.stopPropagation();doStock()};bd.appendChild(sc)}else{var rs=mkSlot(cx(0),ty,'stock-reset');rs.onclick=function(){doReset()};bd.appendChild(rs)}var wn=Math.min(waste.length,3);var ws=waste.length-wn;var wf=Math.round(CW*0.32);for(var i=0;i<wn;i++){var wc=waste[ws+i];var wx=cx(1)+i*wf;var isTop=(i===wn-1);var isSel=isTop&&sel&&sel.src==='w';var el=mkCrd(wc,wx,ty,10+i,isSel);if(isTop){(function(){el.onmousedown=function(e){dStart(e,'w',-1,waste.length-1)};el.ontouchstart=function(e){dStart(e,'w',-1,waste.length-1)};el.onclick=function(e){e.stopPropagation();clkW()};el.ondblclick=function(e){e.stopPropagation();dblW()}})()}else{el.style.cursor='default';el.style.pointerEvents='none'}bd.appendChild(el)}for(var fi=0;fi<4;fi++){var fx=cx(fi+3);var sl=mkSlot(fx,ty,'fnd');sl.setAttribute('data-suit',SYM[fi]);(function(f){sl.onclick=function(){clkF(f)}})(fi);bd.appendChild(sl);if(fnd[fi].length>0){var fc=mkCrd(fnd[fi][fnd[fi].length-1],fx,ty,10);(function(f){fc.onclick=function(){clkF(f)}})(fi);bd.appendChild(fc)}}var tby=ty+CH+10;for(var col=0;col<7;col++){var px=cx(col);var pile=tab[col];var ts=mkSlot(px,tby,'');(function(c){ts.onclick=function(){clkTE(c)}})(col);bd.appendChild(ts);var cy=tby;for(var ci=0;ci<pile.length;ci++){var cd=pile[ci];var isSel2=sel&&sel.src==='t'&&sel.col===col&&ci>=sel.idx;var el2=mkCrd(cd,px,cy,20+ci,isSel2);if(cd.up){(function(c,i){el2.onmousedown=function(e){dStart(e,'t',c,i)};el2.ontouchstart=function(e){dStart(e,'t',c,i)};el2.onclick=function(e){e.stopPropagation();clkT(c,i)};el2.ondblclick=function(e){e.stopPropagation();dblT(c,i)}})(col,ci)}bd.appendChild(el2);cy+=(cd.up?CAS_D:CAS_U)}}}
+function mkSlot(x,y,cls){var d=document.createElement('div');d.className='sol-slot '+cls;d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+CW+'px;height:'+CH+'px';return d}
+function mkCrd(c,x,y,z,isSel){var d=document.createElement('div');d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+CW+'px;height:'+CH+'px;z-index:'+z;if(!c.up){d.className='sol-crd dn';d.innerHTML=MASCOT;return d}d.className='sol-crd up '+SCOL[c.s]+(isSel?' sel':'');var sym=SYM[c.s],val=VN[c.v];d.innerHTML='<div class="sol-ct"><span class="sol-cv">'+val+'</span><span class="sol-cs">'+sym+'</span></div><div class="sol-cc">'+sym+'</div><div class="sol-cb"><span class="sol-cv">'+val+'</span><span class="sol-cs">'+sym+'</span></div>';return d}
+function doStock(){startT();if(!stock.length)return;push();var n=Math.min(DRAW,stock.length);for(var i=0;i<n;i++){var c=stock.pop();c.up=true;waste.push(c)}mv++;sel=null;draw();stats()}
+function doReset(){startT();if(!waste.length)return;push();stock=waste.reverse().map(function(c){c.up=false;return c});waste=[];mv++;sel=null;draw();stats()}
+function clkW(){startT();if(!waste.length)return;if(sel&&sel.src==='w'){if(autoF(waste[waste.length-1],'w',-1))return;sel=null}else{sel={src:'w',col:-1,idx:waste.length-1}}draw()}
+function dblW(){startT();if(waste.length)autoF(waste[waste.length-1],'w',-1)}
+function clkF(fi){startT();if(!sel)return;var cs=gSel();if(cs.length!==1){sel=null;draw();return}if(canF(cs[0],fi)){push();rSel();fnd[fi].push(cs[0]);mv++;flip(sel.src,sel.col);sel=null;draw();stats();chkW()}else{sel=null;draw()}}
+function clkT(col,ci){startT();var p=tab[col];if(!p[ci].up)return;if(!sel){sel={src:'t',col:col,idx:ci};draw();return}if(sel.src==='t'&&sel.col===col){if(ci===p.length-1)autoF(p[ci],'t',col);else{sel=null;draw()}return}var cs=gSel();if(cs.length&&canT(cs[0],col)){push();var rm=rSel();tab[col]=tab[col].concat(rm);mv++;flip(sel.src,sel.col);sel=null;draw();stats()}else{sel={src:'t',col:col,idx:ci};draw()}}
+function clkTE(col){startT();if(!sel)return;var cs=gSel();if(cs.length&&cs[0].v===13){push();var rm=rSel();tab[col]=tab[col].concat(rm);mv++;flip(sel.src,sel.col);sel=null;draw();stats()}else{sel=null;draw()}}
+function dblT(col,ci){startT();var p=tab[col];if(ci===p.length-1)autoF(p[ci],'t',col)}
+function canF(c,fi){var p=fnd[fi];if(!p.length)return c.v===1;var t=p[p.length-1];return c.s===t.s&&c.v===t.v+1}
+function canT(c,col){var p=tab[col];if(!p.length)return c.v===13;var t=p[p.length-1];if(!t.up)return false;return isRed(c.s)!==isRed(t.s)&&c.v===t.v-1}
+function gSel(){if(!sel)return[];if(sel.src==='w')return waste.length?[waste[waste.length-1]]:[];if(sel.src==='t')return tab[sel.col].slice(sel.idx);return[]}
+function rSel(){if(sel.src==='w')return[waste.pop()];if(sel.src==='t')return tab[sel.col].splice(sel.idx);return[]}
+function flip(src,col){if(src!=='t'||col<0)return;var p=tab[col];if(p.length&&!p[p.length-1].up)p[p.length-1].up=true}
+function autoF(c,src,col){for(var fi=0;fi<4;fi++){if(canF(c,fi)){push();if(src==='w')waste.pop();else if(src==='t')tab[col].pop();fnd[fi].push(c);mv++;flip(src,col);sel=null;draw();stats();chkW();return true}}return false}
+function push(){hist.push({stock:stock.map(function(c){return{s:c.s,v:c.v,up:c.up}}),waste:waste.map(function(c){return{s:c.s,v:c.v,up:c.up}}),fnd:fnd.map(function(f){return f.map(function(c){return{s:c.s,v:c.v,up:c.up}})}),tab:tab.map(function(t){return t.map(function(c){return{s:c.s,v:c.v,up:c.up}})}),mv:mv});if(hist.length>200)hist.shift()}
+function undoMove(){if(!hist.length)return;var h=hist.pop();stock=h.stock;waste=h.waste;fnd=h.fnd;tab=h.tab;mv=h.mv;sel=null;draw();stats()}
+function chkW(){var n=0;fnd.forEach(function(f){n+=f.length});if(n===52){clearInterval(tmr);tmr=null;var t=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');document.getElementById('solWinS').innerHTML='moves: '+mv+'<br>time: '+t;setTimeout(function(){document.getElementById('solWin').classList.add('visible')},400)}}
+function dStart(e,src,col,idx){if(e.type==='mousedown'&&e.button!==0)return;e.preventDefault();var px=e.clientX||(e.touches&&e.touches[0].clientX)||0;var py=e.clientY||(e.touches&&e.touches[0].clientY)||0;dSX=px;dSY=py;dragging=false;dragEls=[];var cards=[];if(src==='w'){if(!waste.length)return;cards=[waste[waste.length-1]]}else if(src==='t'){var p=tab[col];if(!p[idx]||!p[idx].up)return;cards=p.slice(idx)}else return;dragD={src:src,col:col,idx:idx,cards:cards};var onM=function(ev){ev.preventDefault();var mx=ev.clientX||(ev.touches&&ev.touches[0].clientX)||0;var my=ev.clientY||(ev.touches&&ev.touches[0].clientY)||0;if(!dragging){if(Math.abs(mx-dSX)+Math.abs(my-dSY)<6)return;dragging=true;buildGhosts(px,py)}moveGhosts(mx,my)};var onU=function(ev){document.removeEventListener('mousemove',onM);document.removeEventListener('mouseup',onU);document.removeEventListener('touchmove',onM,{passive:false});document.removeEventListener('touchend',onU);document.removeEventListener('touchcancel',onU);if(dragging){var ex=ev.clientX||(ev.changedTouches&&ev.changedTouches[0].clientX)||0;var ey=ev.clientY||(ev.changedTouches&&ev.changedTouches[0].clientY)||0;doDrop(ex,ey)}dragging=false;dragD=null};document.addEventListener('mousemove',onM);document.addEventListener('mouseup',onU);document.addEventListener('touchmove',onM,{passive:false});document.addEventListener('touchend',onU);document.addEventListener('touchcancel',onU)}
+function buildGhosts(px,py){var bd=document.getElementById('solBoard');var br=bd.getBoundingClientRect();var cards=dragD.cards;var bx,by;if(dragD.src==='w'){var wn=Math.min(waste.length,3);bx=cx(1)+(wn-1)*Math.round(CW*0.32);by=PY}else{bx=cx(dragD.col);by=PY+CH+10;var pile=tab[dragD.col];for(var k=0;k<dragD.idx;k++)by+=(pile[k].up?CAS_D:CAS_U)}dOX=px-br.left-bx;dOY=py-br.top-by;for(var i=0;i<cards.length;i++){var el=mkCrd(cards[i],bx,by+i*CAS_D,5000+i,false);el.classList.add('dragging');bd.appendChild(el);dragEls.push({el:el,oy:i*CAS_D})}}
+function moveGhosts(mx,my){var br=document.getElementById('solBoard').getBoundingClientRect();var bx=mx-br.left-dOX;var by=my-br.top-dOY;dragEls.forEach(function(d){d.el.style.left=bx+'px';d.el.style.top=(by+d.oy)+'px'})}
+function doDrop(ex,ey){dragEls.forEach(function(d){d.el.remove()});dragEls=[];if(!dragD)return;var br=document.getElementById('solBoard').getBoundingClientRect();var bx=ex-br.left,by=ey-br.top;var cards=dragD.cards;var bot=cards[0];var placed=false;if(cards.length===1){for(var fi=0;fi<4;fi++){var fx=cx(fi+3),fy=PY;if(bx>=fx-GAP&&bx<=fx+CW+GAP&&by>=fy-5&&by<=fy+CH+5){if(canF(bot,fi)){push();rmDrag();fnd[fi].push(bot);mv++;placed=true;flip(dragD.src,dragD.col);break}}}}if(!placed){for(var c2=0;c2<7;c2++){var px2=cx(c2);if(bx>=px2-CW*0.3&&bx<=px2+CW+CW*0.3){var pile=tab[c2];if(dragD.src==='t'&&dragD.col===c2)continue;if(!pile.length){if(bot.v===13){push();var rm2=rmDrag();tab[c2]=tab[c2].concat(rm2);mv++;placed=true;flip(dragD.src,dragD.col);break}}else if(canT(bot,c2)){push();var rm3=rmDrag();tab[c2]=tab[c2].concat(rm3);mv++;placed=true;flip(dragD.src,dragD.col);break}}}}startT();sel=null;draw();stats();if(placed)chkW()}
+function rmDrag(){if(dragD.src==='w')return[waste.pop()];if(dragD.src==='t')return tab[dragD.col].splice(dragD.idx);return[]}
+var resizeHandler=null;
+function open(){document.getElementById('solOverlay').classList.add('visible');newGame();resizeHandler=function(){layout();draw()};window.addEventListener('resize',resizeHandler);document.getElementById('solBoard').onclick=function(e){if(e.target===document.getElementById('solBoard')){sel=null;draw()}}}
+function close(){document.getElementById('solOverlay').classList.remove('visible');clearInterval(tmr);tmr=null;if(resizeHandler)window.removeEventListener('resize',resizeHandler)}
+return{open:open,close:close,newGame:newGame,undo:undoMove};
+})();
 
 /* ============================================================
    PWA REGISTRATION
