@@ -884,6 +884,7 @@ function closePartsEditor(){document.getElementById('partsOverlay').classList.re
 
 async function saveMascotParts(){
   await dbPut('svg_config',{id:'mascot_parts',parts:mascotParts});
+  _cardBackSvgCache=buildMascotSvgFromParts(mascotParts);
   closePartsEditor();loadHero();showToast('Mascot saved');
 }
 function resetMascotParts(){
@@ -912,6 +913,16 @@ function buildPartSvg(p){
 function buildMascotSvgFromParts(parts){
   return'<svg viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">'+(parts||[]).map(buildPartSvg).join('')+'</svg>';
 }
+/* Global card-back mascot — reads from parts editor, cached until save */
+var _cardBackSvgCache=null;
+function getCardBackSvg(){if(_cardBackSvgCache)return _cardBackSvgCache;return DEFAULT_CARD_BACK_SVG}
+function refreshCardBackSvg(){
+  dbGet('svg_config','mascot_parts').then(function(saved){
+    if(saved&&saved.parts)_cardBackSvgCache=buildMascotSvgFromParts(saved.parts);
+    else _cardBackSvgCache=null;
+  });
+}
+var DEFAULT_CARD_BACK_SVG='<svg viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg"><path d="M100 20 C50 20,20 70,20 130 C20 180,30 220,40 260 L60 290 L140 290 L160 260 C170 220,180 180,180 130 C180 70,150 20,100 20Z" fill="#6b1111" stroke="#e50000" stroke-width="0.8" opacity="0.5"/><path d="M100 30 C58 30,32 75,32 128 C32 170,38 200,45 235 L65 275 L135 275 L155 235 C162 200,168 170,168 128 C168 75,142 30,100 30Z" fill="#500d0d"/><path d="M66 100 Q80 82,98 96" fill="none" stroke="#e50000" stroke-width="5" stroke-linecap="round"/><line x1="113" y1="88" x2="135" y2="110" stroke="#e50000" stroke-width="5" stroke-linecap="round"/><line x1="135" y1="88" x2="113" y2="110" stroke="#e50000" stroke-width="5" stroke-linecap="round"/><polygon points="58,126 66,144 74,126" fill="#e50000"/><polygon points="78,126 86,146 94,126" fill="#e50000"/><polygon points="98,125 106,146 114,125" fill="#e50000"/><polygon points="118,126 126,146 134,126" fill="#e50000"/><polygon points="66,148 74,130 82,148" fill="#e50000"/><polygon points="88,150 96,130 104,150" fill="#e50000"/><polygon points="110,150 118,130 126,150" fill="#e50000"/><polygon points="130,148 138,132 146,148" fill="#e50000"/></svg>';
 function renderPartsPreview(){document.getElementById('partsPreview').innerHTML=buildMascotSvgFromParts(mascotParts)}
 function renderPartsUI(){renderPartsPreview();renderPartChips();renderPartSliders()}
 function renderPartChips(){
@@ -1030,24 +1041,24 @@ function resetCardConfig(){
 
 function renderCardPreview(){
   const c=cardConfig;const w=70;const h=Math.round(w*1.4);
-  const mascotSvg='<svg viewBox="30 30 140 230" xmlns="http://www.w3.org/2000/svg" style="width:55%;opacity:'+c.backMascotOpacity+'"><path d="M100 20 C50 20,20 70,20 130 C20 180,30 220,40 260 L60 290 L140 290 L160 260 C170 220,180 180,180 130 C180 70,150 20,100 20Z" fill="'+c.backBorder+'" stroke="'+c.redColor+'" stroke-width="0.8" opacity="0.5"/><path d="M100 30 C58 30,32 75,32 128 C32 170,38 200,45 235 L65 275 L135 275 L155 235 C162 200,168 170,168 128 C168 75,142 30,100 30Z" fill="'+c.backBg+'"/></svg>';
+  const mascot=getCardBackSvg();
   let html='';
-  /* Face-up card */
+  /* Face-up red card */
   html+='<div style="text-align:center"><div class="preview-card" style="width:'+w+'px;height:'+h+'px;background:'+c.faceBg+';border:1.5px solid '+c.faceBorder+';border-radius:'+c.radius+'px;padding:3px 4px;color:'+c.redColor+'">';
   html+='<div style="display:flex;align-items:center;gap:1px"><span style="font-size:'+c.valueSize+';font-weight:700;font-family:var(--font-heading)">K</span><span style="font-size:0.55rem">♥</span></div>';
   html+='<div style="font-size:'+c.suitSize+';text-align:center;flex:1;display:flex;align-items:center;justify-content:center">♥</div>';
   html+='<div style="display:flex;align-items:center;gap:1px;transform:rotate(180deg)"><span style="font-size:'+c.valueSize+';font-weight:700;font-family:var(--font-heading)">K</span><span style="font-size:0.55rem">♥</span></div>';
   html+='</div><div style="font-size:0.5rem;color:var(--white-dim);margin-top:4px;font-family:var(--font-heading)">FACE</div></div>';
-  /* Black suit sample */
+  /* Face-up black card */
   html+='<div style="text-align:center"><div class="preview-card" style="width:'+w+'px;height:'+h+'px;background:'+c.faceBg+';border:1.5px solid '+c.faceBorder+';border-radius:'+c.radius+'px;padding:3px 4px;color:'+c.blackColor+'">';
   html+='<div style="display:flex;align-items:center;gap:1px"><span style="font-size:'+c.valueSize+';font-weight:700;font-family:var(--font-heading)">A</span><span style="font-size:0.55rem">♠</span></div>';
   html+='<div style="font-size:'+c.suitSize+';text-align:center;flex:1;display:flex;align-items:center;justify-content:center">♠</div>';
   html+='<div style="display:flex;align-items:center;gap:1px;transform:rotate(180deg)"><span style="font-size:'+c.valueSize+';font-weight:700;font-family:var(--font-heading)">A</span><span style="font-size:0.55rem">♠</span></div>';
   html+='</div><div style="font-size:0.5rem;color:var(--white-dim);margin-top:4px;font-family:var(--font-heading)">BLACK</div></div>';
-  /* Face-down card */
-  html+='<div style="text-align:center"><div class="preview-back" style="width:'+w+'px;height:'+h+'px;background:'+c.backBg+';border:1.5px solid '+c.backBorder+';border-radius:'+c.radius+'px">';
-  html+='<div style="position:absolute;inset:3px;border:1px solid '+c.backInner+';border-radius:3px"></div>';
-  html+=mascotSvg;
+  /* Face-down card — real mascot, centered */
+  html+='<div style="text-align:center"><div style="width:'+w+'px;height:'+h+'px;background:'+c.backBg+';border:1.5px solid '+c.backBorder+';border-radius:'+c.radius+'px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">';
+  html+='<div style="position:absolute;inset:3px;border:1px solid '+c.backInner+';border-radius:3px;pointer-events:none"></div>';
+  html+='<div style="width:55%;opacity:'+c.backMascotOpacity+';display:flex;align-items:center;justify-content:center">'+mascot+'</div>';
   html+='</div><div style="font-size:0.5rem;color:var(--white-dim);margin-top:4px;font-family:var(--font-heading)">BACK</div></div>';
   document.getElementById('cardPreviewArea').innerHTML=html;
 }
@@ -1210,7 +1221,7 @@ function startT(){if(tmr)return;tmr=setInterval(function(){sec++;document.getEle
 function stats(){document.getElementById('solMv').textContent=mv}
 function draw(){var bd=document.getElementById('solBoard');bd.innerHTML='';var ty=PY;if(stock.length>0){bd.appendChild(mkSlot(cx(0),ty,''));var sc=mkCrd(stock[stock.length-1],cx(0),ty,5);sc.onclick=function(e){e.stopPropagation();doStock()};bd.appendChild(sc)}else{var rs=mkSlot(cx(0),ty,'stock-reset');rs.onclick=function(){doReset()};bd.appendChild(rs)}var wn=Math.min(waste.length,3);var ws=waste.length-wn;var wf=Math.round(CW*0.32);for(var i=0;i<wn;i++){var wc=waste[ws+i];var wx=cx(1)+i*wf;var isTop=(i===wn-1);var isSel=isTop&&sel&&sel.src==='w';var el=mkCrd(wc,wx,ty,10+i,isSel);if(isTop){(function(){el.onmousedown=function(e){dStart(e,'w',-1,waste.length-1)};el.ontouchstart=function(e){dStart(e,'w',-1,waste.length-1)};el.onclick=function(e){e.stopPropagation();clkW()};el.ondblclick=function(e){e.stopPropagation();dblW()}})()}else{el.style.cursor='default';el.style.pointerEvents='none'}bd.appendChild(el)}for(var fi=0;fi<4;fi++){var fx=cx(fi+3);var sl=mkSlot(fx,ty,'fnd');sl.setAttribute('data-suit',SYM[fi]);(function(f){sl.onclick=function(){clkF(f)}})(fi);bd.appendChild(sl);if(fnd[fi].length>0){var fc=mkCrd(fnd[fi][fnd[fi].length-1],fx,ty,10);(function(f){fc.onclick=function(){clkF(f)}})(fi);bd.appendChild(fc)}}var tby=ty+CH+10;for(var col=0;col<7;col++){var px=cx(col);var pile=tab[col];var ts=mkSlot(px,tby,'');(function(c){ts.onclick=function(){clkTE(c)}})(col);bd.appendChild(ts);var cy=tby;for(var ci=0;ci<pile.length;ci++){var cd=pile[ci];var isSel2=sel&&sel.src==='t'&&sel.col===col&&ci>=sel.idx;var el2=mkCrd(cd,px,cy,20+ci,isSel2);if(cd.up){(function(c,i){el2.onmousedown=function(e){dStart(e,'t',c,i)};el2.ontouchstart=function(e){dStart(e,'t',c,i)};el2.onclick=function(e){e.stopPropagation();clkT(c,i)};el2.ondblclick=function(e){e.stopPropagation();dblT(c,i)}})(col,ci)}bd.appendChild(el2);cy+=(cd.up?CAS_D:CAS_U)}}}
 function mkSlot(x,y,cls){var d=document.createElement('div');d.className='sol-slot '+cls;var cc=window.cardConfig||{};d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+CW+'px;height:'+CH+'px;border-radius:'+(cc.radius||6)+'px';return d}
-function mkCrd(c,x,y,z,isSel){var cc=window.cardConfig||{};var rad=cc.radius||6;var d=document.createElement('div');d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+CW+'px;height:'+CH+'px;z-index:'+z;if(!c.up){d.className='sol-crd dn';d.style.background=cc.backBg||'#991111';d.style.borderColor=cc.backBorder||'#6b1111';d.style.borderRadius=rad+'px';d.innerHTML='<div style="position:absolute;inset:3px;border:1px solid '+(cc.backInner||'rgba(229,0,0,0.2)')+';border-radius:3px;pointer-events:none"></div><div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%"><div style="width:55%;opacity:'+(cc.backMascotOpacity!==undefined?cc.backMascotOpacity:0.5)+'">'+MASCOT+'</div></div>';return d}var rc=cc.redColor||'#e53e3e',bc=cc.blackColor||'#cbd5e0';var col=SCOL[c.s]==='rs'?rc:bc;d.className='sol-crd up'+(isSel?' sel':'');d.style.background=cc.faceBg||'#111';d.style.borderColor=cc.faceBorder||'#333';d.style.borderRadius=rad+'px';d.style.border='1.5px solid '+(cc.faceBorder||'#333');d.style.color=col;var sym=SYM[c.s],val=VN[c.v];d.innerHTML='<div class="sol-ct"><span class="sol-cv">'+val+'</span><span class="sol-cs">'+sym+'</span></div><div class="sol-cc">'+sym+'</div><div class="sol-cb"><span class="sol-cv">'+val+'</span><span class="sol-cs">'+sym+'</span></div>';return d}
+function mkCrd(c,x,y,z,isSel){var cc=window.cardConfig||{};var rad=cc.radius||6;var d=document.createElement('div');d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+CW+'px;height:'+CH+'px;z-index:'+z+';position:absolute';if(!c.up){d.className='sol-crd dn';d.style.background=cc.backBg||'#991111';d.style.border='1.5px solid '+(cc.backBorder||'#6b1111');d.style.borderRadius=rad+'px';d.style.display='flex';d.style.alignItems='center';d.style.justifyContent='center';d.style.overflow='hidden';d.style.position='absolute';var msvg=window.getCardBackSvg?window.getCardBackSvg():MASCOT;d.innerHTML='<div style="position:absolute;inset:3px;border:1px solid '+(cc.backInner||'rgba(229,0,0,0.2)')+';border-radius:3px;pointer-events:none"></div><div style="width:55%;opacity:'+(cc.backMascotOpacity!==undefined?cc.backMascotOpacity:0.5)+';display:flex;align-items:center;justify-content:center">'+msvg+'</div>';return d}var rc=cc.redColor||'#e53e3e',bc=cc.blackColor||'#cbd5e0';var col=SCOL[c.s]==='rs'?rc:bc;d.className='sol-crd up'+(isSel?' sel':'');d.style.background=cc.faceBg||'#111';d.style.border='1.5px solid '+(cc.faceBorder||'#333');d.style.borderRadius=rad+'px';d.style.color=col;d.style.display='flex';d.style.flexDirection='column';d.style.justifyContent='space-between';var sym=SYM[c.s],val=VN[c.v];d.innerHTML='<div class="sol-ct"><span class="sol-cv">'+val+'</span><span class="sol-cs">'+sym+'</span></div><div class="sol-cc">'+sym+'</div><div class="sol-cb"><span class="sol-cv">'+val+'</span><span class="sol-cs">'+sym+'</span></div>';return d}
 function doStock(){startT();if(!stock.length)return;push();var n=Math.min(DRAW,stock.length);for(var i=0;i<n;i++){var c=stock.pop();c.up=true;waste.push(c)}mv++;sel=null;draw();stats()}
 function doReset(){startT();if(!waste.length)return;push();stock=waste.reverse().map(function(c){c.up=false;return c});waste=[];mv++;sel=null;draw();stats()}
 function clkW(){startT();if(!waste.length)return;if(sel&&sel.src==='w'){if(autoF(waste[waste.length-1],'w',-1))return;sel=null}else{sel={src:'w',col:-1,idx:waste.length-1}}draw()}
@@ -1247,7 +1258,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch
 /* ============================================================
    INIT
    ============================================================ */
-function loadAll(){loadCardConfig().then(function(){window.cardConfig=cardConfig});loadTheme();loadEntries();loadTiles();loadBeliefs();loadProjects();loadGames();loadResources();loadSocials();loadHero();loadAbout();loadFooter()}
+function loadAll(){loadCardConfig().then(function(){window.cardConfig=cardConfig});loadTheme();refreshCardBackSvg();loadEntries();loadTiles();loadBeliefs();loadProjects();loadGames();loadResources();loadSocials();loadHero();loadAbout();loadFooter()}
 openDB().then(()=>loadAll()).catch(e=>console.error('DB error:',e));
 </script>
 </body>
