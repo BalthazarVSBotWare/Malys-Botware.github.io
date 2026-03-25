@@ -1,7 +1,7 @@
 {
-  "name": "Malys Journal",
-  "short_name": "Journal",
-  "description": "Personal journal, notes, and creative space",
+  "name": "Bal's Builders Journal",
+  "short_name": "Bal's Journal",
+  "description": "Journal, productivity tools, and trade utilities \u2014 all offline",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
