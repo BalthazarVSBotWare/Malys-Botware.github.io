@@ -343,6 +343,41 @@
     .job-photos{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
     .job-photos img{width:60px;height:60px;object-fit:cover;border:1px solid var(--gray);border-radius:2px;cursor:pointer}
 
+
+    /* Lock / Profile screen */
+    .lock-screen{position:fixed;inset:0;z-index:500;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+    .lock-screen.hidden{display:none}
+    .lock-logo{margin-bottom:24px;opacity:0.6}
+    .lock-logo svg{width:80px;height:120px;filter:drop-shadow(0 0 20px rgba(229,0,0,0.15))}
+    .lock-title{font-family:var(--font-heading);font-size:1rem;font-weight:700;color:var(--white);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+    .lock-subtitle{font-size:0.75rem;color:var(--white-dim);margin-bottom:24px}
+    .pin-dots{display:flex;gap:12px;margin-bottom:24px}
+    .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--gray);transition:all 0.15s}
+    .pin-dot.filled{background:var(--red);border-color:var(--red)}
+    .pin-dot.wrong{border-color:#ff4444;animation:shake 0.3s}
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+    .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:240px;width:100%}
+    .pin-key{font-family:var(--font-heading);font-size:1.3rem;padding:16px;border:1px solid var(--gray);background:var(--black-card);color:var(--white);cursor:pointer;text-align:center;transition:all 0.1s;touch-action:manipulation;border-radius:4px}
+    .pin-key:active{background:var(--gray);transform:scale(0.95)}
+    .pin-key.action{font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:var(--white-dim)}
+    .pin-key.action:active{color:var(--red)}
+    /* Profile cards */
+    .profile-grid{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:24px;max-width:320px}
+    .profile-card{width:70px;text-align:center;cursor:pointer;padding:10px 6px;border:2px solid var(--gray);background:var(--black-card);transition:all 0.15s;border-radius:4px}
+    .profile-card:active{border-color:var(--red);transform:scale(0.95)}
+    .profile-card.active{border-color:var(--red)}
+    .profile-avatar{width:40px;height:40px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--black)}
+    .profile-name{font-family:var(--font-heading);font-size:0.5rem;letter-spacing:1px;text-transform:uppercase;color:var(--white-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .profile-add{border-style:dashed;border-color:var(--gray)}
+    .profile-add:active{border-color:var(--white-dim)}
+    /* Profile create form */
+    .profile-form{max-width:280px;width:100%;text-align:left}
+    .profile-form label{display:block;font-family:var(--font-heading);font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;color:var(--white-dim);margin-bottom:4px;margin-top:12px}
+    .profile-form input{width:100%;background:var(--black-card);border:1px solid var(--gray);color:var(--white);font-family:var(--font-body);font-size:0.9rem;padding:10px;outline:none}
+    .profile-form input:focus{border-color:var(--red-dim)}
+    .lock-error{color:var(--red);font-size:0.7rem;margin-bottom:8px;min-height:18px}
+    .lock-actions{display:flex;gap:8px;margin-top:16px;justify-content:center}
+
     /* Paint Tool */
     .paint-overlay{display:none;position:fixed;inset:0;z-index:270;background:var(--black);flex-direction:column;touch-action:none}
     .paint-overlay.visible{display:flex}
@@ -384,6 +419,13 @@
   </style>
 </head>
 <body>
+
+
+<!-- LOCK SCREEN -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-logo"><svg viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg"><path d="M100 20 C50 20,20 70,20 130 C20 180,30 220,40 260 L60 290 L140 290 L160 260 C170 220,180 180,180 130 C180 70,150 20,100 20Z" fill="#111" stroke="#1a1a1a" stroke-width="1"/><path d="M100 30 C58 30,32 75,32 128 C32 170,38 200,45 235 L65 275 L135 275 L155 235 C162 200,168 170,168 128 C168 75,142 30,100 30Z" fill="#050505"/><path d="M66 100 Q80 82,98 96" fill="none" stroke="#e50000" stroke-width="6" stroke-linecap="round"/><line x1="113" y1="88" x2="135" y2="110" stroke="#e50000" stroke-width="7" stroke-linecap="round"/><line x1="135" y1="88" x2="113" y2="110" stroke="#e50000" stroke-width="7" stroke-linecap="round"/><polygon points="58,126 66,144 74,126" fill="#e50000"/><polygon points="78,126 86,146 94,126" fill="#e50000"/><polygon points="98,125 106,146 114,125" fill="#e50000"/><polygon points="118,126 126,146 134,126" fill="#e50000"/><polygon points="66,148 74,130 82,148" fill="#e50000"/><polygon points="88,150 96,130 104,150" fill="#e50000"/><polygon points="110,150 118,130 126,150" fill="#e50000"/><polygon points="130,148 138,132 146,148" fill="#e50000"/></svg></div>
+  <div id="lockContent"></div>
+</div>
 
 <!-- ============================================================
      TAB PANELS
@@ -599,6 +641,16 @@
     <h3>About You</h3>
     <div class="about-text" id="aboutText" style="margin-bottom:12px"></div>
     <button class="btn btn-full" onclick="openEditor('about')">edit about text</button>
+  </div>
+  <div class="setting-group">
+    <h3>Profile</h3>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn btn-full" onclick="switchProfile()">Switch Profile</button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" onclick="changePin()">Change PIN</button>
+      <button class="btn btn-danger" onclick="deleteCurrentProfile()">Delete Profile</button>
+    </div>
   </div>
   <div class="setting-group">
     <h3>Danger Zone</h3>
@@ -851,7 +903,7 @@
 /* ============================================================
    INDEXEDDB
    ============================================================ */
-const DB_NAME='malys_journal';const DB_VER=3;
+var DB_NAME='malys_journal';const DB_VER=3;
 const STORES=['settings','beliefs','tiles','projects','games','entries','resources','socials','images','svg_config','events','jobs'];
 let db=null;
 
@@ -1258,7 +1310,8 @@ async function loadResources(){
     if(!groups[cat].length)return;
     html+='<div style="margin-bottom:16px"><div style="font-family:var(--font-heading);font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--gray)">'+labels[cat]+'</div>';
     groups[cat].forEach(r=>{
-      html+='<div class="card"><div class="card-title">'+esc(r.icon||'')+' '+esc(r.title)+'</div><p>'+esc(r.description||'')+'</p>'+(r.url?'<a href="'+esc(r.url)+'" target="_blank" style="font-size:0.75rem;display:block;margin-top:6px">'+esc(r.url)+'</a>':'')+'<div class="card-actions"><button class="btn" onclick="openEditor(\'resource\',\''+r.id+'\')">edit</button><button class="btn btn-danger" onclick="deleteItem(\'resources\',\''+r.id+'\',loadResources)">delete</button></div></div>';
+      var clickable=r.url?' onclick="window.open(\''+esc(r.url).replace(/'/g,"\\'")+'\',\'_blank\')" style="cursor:pointer"':'';
+      html+='<div class="card"'+clickable+'><div class="card-title">'+esc(r.icon||'')+' '+esc(r.title)+'</div><p>'+esc(r.description||'')+'</p>'+(r.url?'<div style="font-size:0.7rem;color:var(--red);margin-top:6px">'+esc(r.url)+'</div>':'')+'<div class="card-actions" onclick="event.stopPropagation()"><button class="btn" onclick="openEditor(\'resource\',\''+r.id+'\')">edit</button><button class="btn btn-danger" onclick="deleteItem(\'resources\',\''+r.id+'\',loadResources)">delete</button></div></div>';
     });
     html+='</div>';
   });
@@ -1272,7 +1325,7 @@ async function loadSocials(){
   const el=document.getElementById('socialsList');
   const items=(await dbGetAll('socials')).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
   if(!items.length){el.innerHTML='<p class="empty-msg">no links yet.</p>';return}
-  el.innerHTML=items.map(s=>'<div class="social-card"><div class="s-icon">'+iconSvg(s.icon_key)+'</div><div class="s-info"><div class="s-name">'+esc(s.name)+'</div><div class="s-handle">'+esc(s.handle)+'</div></div><div class="card-actions" style="margin-top:0"><button class="btn" onclick="openEditor(\'social\',\''+s.id+'\')">edit</button><button class="btn btn-danger" onclick="deleteItem(\'socials\',\''+s.id+'\',loadSocials)">del</button></div></div>').join('');
+  el.innerHTML=items.map(s=>'<div class="social-card" onclick="window.open(\''+esc(s.url).replace(/'/g,"\\'")+'\',\'_blank\')" style="cursor:pointer"><div class="s-icon">'+iconSvg(s.icon_key)+'</div><div class="s-info"><div class="s-name">'+esc(s.name)+'</div><div class="s-handle">'+esc(s.handle)+'</div></div><div class="card-actions" style="margin-top:0" onclick="event.stopPropagation()"><button class="btn" onclick="openEditor(\'social\',\''+s.id+'\')">edit</button><button class="btn btn-danger" onclick="deleteItem(\'socials\',\''+s.id+'\',loadSocials)">del</button></div></div>').join('');
 }
 
 /* ============================================================
@@ -2474,11 +2527,329 @@ return{open:open,close:close,newGame:newGame,undo:undoMove};
    ============================================================ */
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 
+
+/* ============================================================
+   PROFILE / PIN SYSTEM
+   ============================================================ */
+var PROFILE_COLORS=['#e50000','#0ea5e9','#22c55e','#f59e0b'];
+var PROFILE_INITIALS_COLORS=['#991111','#0369a1','#166534','#b45309'];
+var MAX_PROFILES=4;
+var currentProfileId=null;
+
+function getProfiles(){
+  try{return JSON.parse(localStorage.getItem('malys_profiles')||'[]')}
+  catch(e){return[]}
+}
+function saveProfiles(p){localStorage.setItem('malys_profiles',JSON.stringify(p))}
+function getLastProfileId(){return localStorage.getItem('malys_last_profile')||null}
+function setLastProfileId(id){localStorage.setItem('malys_last_profile',id)}
+
+function profileInit(){
+  var profiles=getProfiles();
+  if(!profiles.length){
+    showProfileCreate();
+  }else{
+    var lastId=getLastProfileId();
+    var last=profiles.find(function(p){return p.id===lastId});
+    /* Legacy profile with default PIN — auto-unlock and prompt */
+    if(last&&last.id==='legacy'&&last.pin==='0000'){
+      currentProfileId=last.id;
+      DB_NAME='malys_journal';
+      setLastProfileId(last.id);
+      document.getElementById('lockScreen').classList.add('hidden');
+      db=null;
+      openDB().then(function(){return migrateOldIds()}).then(function(){
+        loadAll();
+        showToast('Set a PIN in Gear \u2192 Profile');
+      }).catch(function(e){console.error('DB error:',e)});
+      return;
+    }
+    if(last){
+      showPinEntry(last);
+    }else{
+      showProfilePicker();
+    }
+  }
+}
+
+function showProfilePicker(){
+  var profiles=getProfiles();
+  var html='<div class="lock-title">MalysVSBotWare\u2122</div>';
+  html+='<div class="lock-subtitle">choose profile</div>';
+  html+='<div class="profile-grid">';
+  profiles.forEach(function(p,i){
+    var color=PROFILE_COLORS[i%PROFILE_COLORS.length];
+    var initial=(p.name||'?')[0].toUpperCase();
+    html+='<div class="profile-card" onclick="pickProfile(\''+p.id+'\')">';
+    html+='<div class="profile-avatar" style="background:'+color+'">'+initial+'</div>';
+    html+='<div class="profile-name">'+esc(p.name)+'</div>';
+    html+='</div>';
+  });
+  if(profiles.length<MAX_PROFILES){
+    html+='<div class="profile-card profile-add" onclick="showProfileCreate()">';
+    html+='<div class="profile-avatar" style="background:var(--gray);color:var(--white-dim)">+</div>';
+    html+='<div class="profile-name">new</div>';
+    html+='</div>';
+  }
+  html+='</div>';
+  document.getElementById('lockContent').innerHTML=html;
+  document.getElementById('lockScreen').classList.remove('hidden');
+}
+
+function pickProfile(id){
+  var profiles=getProfiles();
+  var p=profiles.find(function(pr){return pr.id===id});
+  if(p)showPinEntry(p);
+}
+
+/* PIN entry screen */
+var pinBuffer='',pinTarget=null,pinCallback=null;
+function showPinEntry(profile){
+  pinBuffer='';pinTarget=profile;
+  var profiles=getProfiles();
+  var html='<div class="lock-title">'+esc(profile.name)+'</div>';
+  html+='<div class="lock-subtitle">enter PIN</div>';
+  html+='<div class="lock-error" id="pinError"></div>';
+  html+='<div class="pin-dots" id="pinDots">';
+  for(var i=0;i<profile.pinLen;i++)html+='<div class="pin-dot" id="pd'+i+'"></div>';
+  html+='</div>';
+  html+=buildPinPad();
+  if(profiles.length>1){
+    html+='<div style="margin-top:16px"><button class="btn" onclick="showProfilePicker()" style="font-size:0.55rem;color:var(--white-dim)">switch profile</button></div>';
+  }
+  document.getElementById('lockContent').innerHTML=html;
+  document.getElementById('lockScreen').classList.remove('hidden');
+  pinCallback=function(){unlockProfile(profile)};
+}
+
+function buildPinPad(){
+  var html='<div class="pin-pad">';
+  for(var i=1;i<=9;i++)html+='<div class="pin-key" onclick="pinPress(\''+i+'\')">'+i+'</div>';
+  html+='<div class="pin-key action" onclick="pinPress(\'clear\')">clear</div>';
+  html+='<div class="pin-key" onclick="pinPress(\'0\')">0</div>';
+  html+='<div class="pin-key action" onclick="pinPress(\'del\')">\u232b</div>';
+  html+='</div>';
+  return html;
+}
+
+function pinPress(key){
+  if(!pinTarget)return;
+  var maxLen=pinTarget.pinLen||4;
+  if(key==='clear'){pinBuffer=''}
+  else if(key==='del'){pinBuffer=pinBuffer.slice(0,-1)}
+  else{if(pinBuffer.length<maxLen)pinBuffer+=key}
+  /* Update dots */
+  for(var i=0;i<maxLen;i++){
+    var dot=document.getElementById('pd'+i);
+    if(dot)dot.classList.toggle('filled',i<pinBuffer.length);
+  }
+  /* Auto-submit when full */
+  if(pinBuffer.length===maxLen){
+    if(pinCallback)setTimeout(pinCallback,150);
+  }
+}
+
+function unlockProfile(profile){
+  if(pinBuffer===profile.pin){
+    currentProfileId=profile.id;
+    DB_NAME=profile.id==='legacy'?'malys_journal':'malys_journal_'+profile.id;
+    setLastProfileId(profile.id);
+    document.getElementById('lockScreen').classList.add('hidden');
+    /* Open this profile's database and load */
+    db=null;
+    openDB().then(function(){return migrateOldIds()}).then(function(){loadAll()}).catch(function(e){console.error('DB error:',e)});
+  }else{
+    pinBuffer='';
+    document.getElementById('pinError').textContent='wrong PIN';
+    var dots=document.querySelectorAll('.pin-dot');
+    dots.forEach(function(d){d.classList.remove('filled');d.classList.add('wrong')});
+    setTimeout(function(){dots.forEach(function(d){d.classList.remove('wrong')});document.getElementById('pinError').textContent=''},600);
+  }
+}
+
+/* Profile creation */
+var createPinStep=0,createPin1='',createName='';
+function showProfileCreate(){
+  createPinStep=0;createPin1='';createName='';
+  var profiles=getProfiles();
+  var html='<div class="lock-title">New Profile</div>';
+  html+='<div class="lock-subtitle">set up your space</div>';
+  html+='<div class="profile-form">';
+  html+='<label>Name</label>';
+  html+='<input type="text" id="createName" placeholder="your name" maxlength="20">';
+  html+='</div>';
+  html+='<div class="lock-error" id="createError"></div>';
+  html+='<div class="lock-actions">';
+  if(profiles.length)html+='<button class="btn" onclick="showProfilePicker()">cancel</button>';
+  html+='<button class="btn btn-primary" onclick="startPinCreate()">next</button>';
+  html+='</div>';
+  document.getElementById('lockContent').innerHTML=html;
+  document.getElementById('lockScreen').classList.remove('hidden');
+}
+
+function startPinCreate(){
+  var name=document.getElementById('createName').value.trim();
+  if(!name){document.getElementById('createError').textContent='Name required';return}
+  createName=name;
+  showPinCreate('choose a 4-6 digit PIN',false);
+}
+
+function showPinCreate(subtitle,isConfirm){
+  pinBuffer='';
+  pinTarget={pinLen:6};/* Allow up to 6 */
+  var html='<div class="lock-title">'+esc(createName)+'</div>';
+  html+='<div class="lock-subtitle">'+subtitle+'</div>';
+  html+='<div class="lock-error" id="pinError"></div>';
+  html+='<div class="pin-dots" id="pinDots">';
+  for(var i=0;i<6;i++)html+='<div class="pin-dot" id="pd'+i+'"></div>';
+  html+='</div>';
+  html+=buildPinPad();
+  html+='<div class="lock-actions">';
+  html+='<button class="btn" onclick="showProfileCreate()">back</button>';
+  if(!isConfirm)html+='<button class="btn btn-primary" onclick="confirmPinStep1()">set</button>';
+  html+='</div>';
+  document.getElementById('lockContent').innerHTML=html;
+  pinCallback=isConfirm?function(){finishPinCreate()}:null;
+}
+
+function confirmPinStep1(){
+  if(pinBuffer.length<4){document.getElementById('pinError').textContent='at least 4 digits';return}
+  createPin1=pinBuffer;
+  showPinCreate('confirm your PIN',true);
+}
+
+function finishPinCreate(){
+  if(pinBuffer!==createPin1){
+    pinBuffer='';
+    document.getElementById('pinError').textContent='PINs don\'t match';
+    var dots=document.querySelectorAll('.pin-dot');
+    dots.forEach(function(d){d.classList.remove('filled');d.classList.add('wrong')});
+    setTimeout(function(){dots.forEach(function(d){d.classList.remove('wrong')});document.getElementById('pinError').textContent='';showPinCreate('choose a 4-6 digit PIN',false)},800);
+    return;
+  }
+  /* Create the profile */
+  var profiles=getProfiles();
+  var id=String(Date.now()).slice(-6);
+  profiles.push({id:id,name:createName,pin:pinBuffer,pinLen:pinBuffer.length});
+  saveProfiles(profiles);
+  /* Auto-login */
+  currentProfileId=id;
+  DB_NAME='malys_journal_'+id;
+  setLastProfileId(id);
+  document.getElementById('lockScreen').classList.add('hidden');
+  db=null;
+  openDB().then(function(){return migrateOldIds()}).then(function(){loadAll()}).catch(function(e){console.error('DB error:',e)});
+  showToast('Profile created \u2014 welcome, '+createName+'!');
+}
+
+/* Switch profile (from settings) */
+function switchProfile(){
+  db=null;currentProfileId=null;
+  showProfilePicker();
+}
+
+/* Change PIN */
+function changePin(){
+  var profiles=getProfiles();
+  var p=profiles.find(function(pr){return pr.id===currentProfileId});
+  if(!p){showToast('No profile');return}
+  pinBuffer='';pinTarget={pinLen:p.pinLen};
+  var html='<div class="lock-title">Change PIN</div>';
+  html+='<div class="lock-subtitle">enter current PIN</div>';
+  html+='<div class="lock-error" id="pinError"></div>';
+  html+='<div class="pin-dots" id="pinDots">';
+  for(var i=0;i<p.pinLen;i++)html+='<div class="pin-dot" id="pd'+i+'"></div>';
+  html+='</div>';
+  html+=buildPinPad();
+  html+='<div class="lock-actions"><button class="btn" onclick="document.getElementById(\'lockScreen\').classList.add(\'hidden\')">cancel</button></div>';
+  document.getElementById('lockContent').innerHTML=html;
+  document.getElementById('lockScreen').classList.remove('hidden');
+  pinCallback=function(){
+    if(pinBuffer===p.pin){
+      createName=p.name;createPin1='';
+      showPinCreate('choose new PIN',false);
+      /* Override finishPinCreate callback to update instead of create */
+      var origFinish=finishPinCreate;
+      finishPinCreate=function(){
+        if(pinBuffer!==createPin1){
+          pinBuffer='';document.getElementById('pinError').textContent='PINs don\'t match';
+          var dots=document.querySelectorAll('.pin-dot');
+          dots.forEach(function(d){d.classList.remove('filled');d.classList.add('wrong')});
+          setTimeout(function(){dots.forEach(function(d){d.classList.remove('wrong')});document.getElementById('pinError').textContent='';showPinCreate('choose new PIN',false)},800);
+          return;
+        }
+        p.pin=pinBuffer;p.pinLen=pinBuffer.length;
+        saveProfiles(profiles);
+        document.getElementById('lockScreen').classList.add('hidden');
+        showToast('PIN changed');
+        finishPinCreate=origFinish;
+      };
+    }else{
+      pinBuffer='';document.getElementById('pinError').textContent='wrong PIN';
+      var dots=document.querySelectorAll('.pin-dot');
+      dots.forEach(function(d){d.classList.remove('filled');d.classList.add('wrong')});
+      setTimeout(function(){dots.forEach(function(d){d.classList.remove('wrong')});document.getElementById('pinError').textContent=''},600);
+    }
+  };
+}
+
+/* Delete current profile */
+function deleteCurrentProfile(){
+  if(!confirm('Delete this profile and ALL its data? This cannot be undone.'))return;
+  if(!confirm('Are you absolutely sure?'))return;
+  var profiles=getProfiles();
+  profiles=profiles.filter(function(p){return p.id!==currentProfileId});
+  saveProfiles(profiles);
+  /* Delete the profile's database */
+  var dbName='malys_journal_'+currentProfileId;
+  indexedDB.deleteDatabase(dbName);
+  db=null;currentProfileId=null;
+  if(profiles.length){
+    showProfilePicker();
+  }else{
+    localStorage.removeItem('malys_last_profile');
+    showProfileCreate();
+  }
+  showToast('Profile deleted');
+}
+
+/* Migrate existing data: if old DB exists with no profiles, create a default profile for it */
+async function migrateExistingToProfile(){
+  var profiles=getProfiles();
+  if(profiles.length>0)return;/* Already has profiles */
+  /* Check if old unsuffixed DB exists */
+  return new Promise(function(resolve){
+    var req=indexedDB.open('malys_journal',DB_VER);
+    req.onsuccess=function(e){
+      var oldDb=e.target.result;
+      var hasData=false;
+      try{
+        var storeNames=Array.from(oldDb.objectStoreNames);
+        hasData=storeNames.length>0;
+      }catch(ex){}
+      oldDb.close();
+      if(hasData){
+        /* Create a default profile that uses the old DB name */
+        var id='legacy';
+        profiles.push({id:id,name:'Malys',pin:'0000',pinLen:4});
+        saveProfiles(profiles);
+        setLastProfileId(id);
+        /* Rename: we can't rename IndexedDB, so legacy profile just uses 'malys_journal_legacy' 
+           But the data is in 'malys_journal'. Easiest: point legacy at the old name */
+      }
+      resolve();
+    };
+    req.onerror=function(){resolve()};
+  });
+}
+
+
 /* ============================================================
    INIT
    ============================================================ */
 function loadAll(){loadCardConfig().then(function(){window.cardConfig=cardConfig});loadTheme();refreshCardBackSvg();loadEntries();loadTiles();loadBeliefs();loadProjects();loadGames();loadResources();loadSocials();loadHero();loadAbout();loadFooter();loadEvents();loadJobs();initConverter()}
-openDB().then(()=>migrateOldIds()).then(()=>loadAll()).catch(e=>console.error('DB error:',e));
+/* Check for legacy data, then show lock screen */
+migrateExistingToProfile().then(function(){profileInit()}).catch(function(){profileInit()});
 </script>
 </body>
 </html>
